@@ -1,0 +1,6 @@
+*.o
+*.out
+*.a
+bin/*
+compile_flags.txt
+compile_commands.json
