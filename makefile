@@ -1,6 +1,6 @@
 SRC_DIR := src
 BIN_DIR := bin
-NAME := $(BIN_DIR)/main
+NAME := $(BIN_DIR)/kilo
 
 CC := clang++
 LANG := -x c++
@@ -32,6 +32,7 @@ debug: fclean compile
 compile: $(NAME)
 
 $(NAME): $(obj)
+	@test -d bin || mkdir bin
 	$(CC) $(obj) $(LIB) $(SAN) -o $(NAME)
 
 %.o: %.cpp
