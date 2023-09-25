@@ -4,76 +4,42 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
+#include <cstring>
+#include <utility>
 
 #include "utils.h"
 #include "keycode.h"
 
+class editor_row
+{
+public:
+    editor_row() noexcept;
+    ~editor_row();
+    editor_row(const editor_row&) noexcept;
+    editor_row(editor_row&&) noexcept;
+    editor_row& operator=(editor_row);
+    friend void swap(editor_row&, editor_row&);
+
+private:
+    size_t m_size;
+    char* m_chars;
+};
+
 class editor_state
 {
 public:
-    unsigned int screen_row, screen_col;
-    unsigned int c_row, c_col;
-
-    editor_state() : c_row{0}, c_col{0}
-    {
-        set_win_size();
-    }
-
-    void move_curor(int c)
-    {
-        switch (c) {
-            case editor_key::LEFT:
-                if (c_col)
-                    --c_col;
-                break;
-            case editor_key::DOWN:
-                if (c_row < screen_row - 1)
-                    ++c_row;
-                break;
-            case editor_key::UP:
-                if (c_row)
-                    --c_row;
-                break;
-            case editor_key::RIGHT:
-                if (c_col < screen_col - 1)
-                    ++c_col;
-                break;
-            case editor_key::PAGE_UP:
-                c_row = 0; // FIXME move cursor to the top/bottom for now
-                break;
-            case editor_key::PAGE_DOWN:
-                while (c_row < screen_row - 1) // FIXME
-                    ++c_row;
-            case editor_key::HOME:
-                c_col = 0;
-                break;
-            case editor_key::END:
-                c_col = screen_col - 1;
-                break;
-            case editor_key::DEL:
-                // TODO
-                break;
-        }
-    }
+    editor_state() noexcept;
+    inline unsigned int screen_row() { return this->m_screen_row; }
+    inline unsigned int screen_col() { return this->m_screen_col; }
+    inline unsigned int c_row() { return this->m_c_row; }
+    inline unsigned int c_col() { return this->m_c_col; }
+    void move_curor(int c);
 
 private:
-    std::optional<std::pair<unsigned int, unsigned int>> get_win_size()
-    {
-        winsize ws;
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
-            return {};
-        return std::make_pair(ws.ws_row, ws.ws_col);
-    }
+    unsigned int m_screen_row, m_screen_col;
+    unsigned int m_c_row, m_c_col;
+    editor_row e_row;
 
-    void set_win_size()
-    {
-        auto ws = get_win_size();
-        if (!ws.has_value())
-            die("get_win_size");
-
-        auto [row, col] = ws.value();
-        this->screen_row = row;
-        this->screen_col = col;
-    }
+    std::optional<std::pair<unsigned int, unsigned int>> get_win_size();
+    void set_win_size();
 };
-

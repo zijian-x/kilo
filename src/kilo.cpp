@@ -19,10 +19,10 @@ static editor_state ed_state;
 void print_welcome(abuf& buf)
 {
     auto msg = fmt::format("Kilo editor -- version {}", KILO_VERS);
-    if (msg.size() > ed_state.screen_col)
+    if (msg.size() > ed_state.screen_col())
         return;
 
-    auto padding = (ed_state.screen_col - msg.size() - 1) / 2;
+    auto padding = (ed_state.screen_col() - msg.size() - 1) / 2;
     if (padding) {
         buf.push_back('~');
         --padding;
@@ -34,15 +34,15 @@ void print_welcome(abuf& buf)
 
 void draw_rows(abuf& buf)
 {
-    for (unsigned int i = 0; i < ed_state.screen_row; ++i) {
-        if (i == ed_state.screen_row / 3) {
+    for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
+        if (i == ed_state.screen_row() / 3) {
             print_welcome(buf);
         } else {
             buf.push_back('~');
         }
 
         buf.append(esc_char::CLEAR_LINE);
-        if (i < ed_state.screen_row - 1)
+        if (i < ed_state.screen_row() - 1)
             buf.append("\r\n");
     }
 }
@@ -50,7 +50,7 @@ void draw_rows(abuf& buf)
 void reset_cursor_pos(abuf& buf)
 {
     buf.append(fmt::format("\x1b[{:d};{:d}H",
-                ed_state.c_row + 1, ed_state.c_col + 1));
+                ed_state.c_row() + 1, ed_state.c_col() + 1));
 }
 
 void refresh_screen()
