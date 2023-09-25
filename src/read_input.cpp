@@ -1,4 +1,5 @@
-#include "read_input.h"
+#include "read_input.hpp"
+#include "utils.hpp"
 
 static std::optional<int> read_arrow_key()
 {

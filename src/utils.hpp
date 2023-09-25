@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <unistd.h>
 
-#include "keycode.h"
+#include "keycode.hpp"
 
 static inline void die(const char* s)
 {

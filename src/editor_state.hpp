@@ -7,9 +7,6 @@
 #include <cstring>
 #include <utility>
 
-#include "utils.h"
-#include "keycode.h"
-
 class editor_row
 {
 public:

@@ -2,7 +2,6 @@
 
 #include <optional>
 
-#include "keycode.h"
-#include "editor_state.h"
+#include "editor_state.hpp"
 
 void process_key_press(editor_state&);

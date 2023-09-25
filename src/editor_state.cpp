@@ -1,4 +1,6 @@
-#include "editor_state.h"
+#include "editor_state.hpp"
+#include "utils.hpp"
+#include "keycode.hpp"
 
 editor_row::editor_row() noexcept
     : m_size{0}

@@ -7,8 +7,8 @@
 
 #include <fmt/format.h>
 
-#include "read_input.h"
-#include "termios_raii.h"
+#include "read_input.hpp"
+#include "termios_raii.hpp"
 
 using abuf = std::string;
 
