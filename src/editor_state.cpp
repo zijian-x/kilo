@@ -3,8 +3,13 @@
 #include "keycode.hpp"
 
 editor_row::editor_row() noexcept
-    : m_size{0}
-    , m_chars{nullptr}
+    : m_chars{}
+    , m_len{}
+{}
+
+editor_row::editor_row(size_t len) noexcept
+    : m_chars{new char[len + 1]{}}
+    , m_len{len}
 {}
 
 editor_row::~editor_row()
@@ -13,15 +18,15 @@ editor_row::~editor_row()
 }
 
 editor_row::editor_row(const editor_row& rhs) noexcept
-    : m_size{rhs.m_size}
-    , m_chars{new char[m_size]{}}
+    : m_chars{new char[rhs.m_len]{}}
+    , m_len{rhs.m_len}
 {
-    std::memcpy(m_chars,rhs.m_chars, m_size);
+    std::memcpy(m_chars,rhs.m_chars, m_len);
 }
 
 editor_row::editor_row(editor_row&& rhs) noexcept
-    : m_size{rhs.m_size}
-    , m_chars{std::exchange(rhs.m_chars, nullptr)}
+    : m_chars{std::exchange(rhs.m_chars, nullptr)}
+    , m_len{rhs.m_len}
 {}
 
 editor_row& editor_row::operator=(editor_row rhs)
@@ -34,13 +39,19 @@ void swap(editor_row& lhs, editor_row& rhs)
 {
     using std::swap;
 
-    swap(lhs.m_size, rhs.m_size);
+    swap(lhs.m_len, rhs.m_len);
     swap(lhs.m_chars, rhs.m_chars);
 }
 
+editor_content::editor_content(size_t size) noexcept
+    : m_ed_rows{new editor_row[size]{}}
+    , m_size{size}
+{}
+
 editor_state::editor_state() noexcept
-    : m_c_row{0}
-    , m_c_col{0}
+    : m_c_row{}
+    , m_c_col{}
+    , m_content{}
 {
     set_win_size();
 }

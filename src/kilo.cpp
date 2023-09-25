@@ -66,6 +66,15 @@ void refresh_screen()
     write(STDOUT_FILENO, buf.c_str(), buf.size());
 }
 
+void editor_open()
+{
+    const char* line = "Hello, world!";
+    size_t len = std::strlen(line);
+    auto& content = ed_state.content();
+    content = editor_content(len);
+    std::memcpy(content.rows()->chars(), line, len);
+}
+
 int main(int argc, char** argv)
 {
     static termios_raii t_ios;
