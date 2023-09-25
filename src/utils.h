@@ -14,8 +14,3 @@ static inline void die(const char* s)
     write(STDOUT_FILENO, esc_char::CLEAR_SCREEN, 4);
     write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
 }
-
-static constexpr inline int ctrl_key(int c)
-{
-    return c & 0x1f;
-}
