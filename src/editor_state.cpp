@@ -2,52 +2,46 @@
 #include "utils.hpp"
 #include "keycode.hpp"
 
-editor_row::editor_row(size_t len) noexcept
-    : m_chars{new char[len + 1]{}}
-    , m_len{len}
-{}
+#include <sys/ioctl.h>
+#include <utility>
 
-editor_row::editor_row(const char* str) noexcept
-    : m_len{std::strlen(str)}
+editor_content::~editor_content()
 {
-    m_chars = new char[m_len + 1]{};
-    std::memcpy(m_chars, str, m_len);
+    delete[] m_rows;
 }
 
-editor_row::~editor_row()
+editor_content::editor_content(const editor_content& content)
+    : m_size{content.m_size}
 {
-    delete[] m_chars;
+    m_rows = new str[m_size]{};
+    for (size_t i = 0; i < m_size; ++i)
+        m_rows[i] = content.m_rows[i];
 }
 
-editor_row::editor_row(const editor_row& rhs) noexcept
-    : m_chars{new char[rhs.m_len]{}}
-    , m_len{rhs.m_len}
-{
-    std::memcpy(m_chars,rhs.m_chars, m_len);
-}
+editor_content::editor_content(editor_content&& content)
+    : m_rows{std::exchange(content.m_rows, nullptr)}
+    , m_size{content.m_size}
+{ }
 
-editor_row::editor_row(editor_row&& rhs) noexcept
-    : m_chars{std::exchange(rhs.m_chars, nullptr)}
-    , m_len{rhs.m_len}
-{}
-
-editor_row& editor_row::operator=(editor_row rhs)
+editor_content& editor_content::operator=(editor_content content)
 {
-    swap(*this, rhs);
+    swap(*this, content);
     return *this;
 }
 
-void swap(editor_row& lhs, editor_row& rhs)
+void swap(editor_content& lhs, editor_content& rhs)
 {
     using std::swap;
-
-    swap(lhs.m_len, rhs.m_len);
-    swap(lhs.m_chars, rhs.m_chars);
+    swap(lhs.m_rows, rhs.m_rows);
+    swap(lhs.m_size, rhs.m_size);
 }
 
-// TODO editor_content
+void editor_content::push_back(str row)
+{
+    // TODO
+}
 
-editor_state::editor_state() noexcept
+editor_state::editor_state()
     : m_c_row{}
     , m_c_col{}
 {

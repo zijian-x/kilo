@@ -7,29 +7,29 @@
 #include <iostream>
 #include <utility>
 
-class strbuf
+class str
 {
 public:
-    strbuf()
+    str()
     {}
 
-    strbuf(const char* str) : m_len{std::strlen(str)}
+    str(const char* str) : m_len{std::strlen(str)}
     {
         m_size = m_len + 1;
         m_str = new char[m_size];
         std::strcpy(m_str, str);
     }
 
-    strbuf(char*&& str) : m_len{std::strlen(str)}
+    str(char*&& str) : m_len{std::strlen(str)}
     {
         m_size = m_len + 1;
         m_str = str;
     }
 
-    ~strbuf()
+    ~str()
     { delete[] m_str; }
 
-    strbuf(const strbuf& buf)
+    str(const str& buf)
         : m_len{buf.m_len}
         , m_size{buf.m_size}
     {
@@ -37,19 +37,19 @@ public:
         std::strcpy(m_str, buf.m_str);
     }
 
-    strbuf(strbuf&& buf)
+    str(str&& buf)
         : m_str{std::exchange(buf.m_str, nullptr)}
         , m_len{buf.m_len}
         , m_size{buf.m_size}
     { }
 
-    strbuf& operator=(strbuf buf)
+    str& operator=(str buf)
     {
         swap(*this, buf);
         return *this;
     }
 
-    friend void swap(strbuf& lhs, strbuf& rhs)
+    friend void swap(str& lhs, str& rhs)
     {
         using std::swap;
         swap(lhs.m_str, rhs.m_str);
@@ -57,8 +57,11 @@ public:
         swap(lhs.m_size, rhs.m_size);
     }
 
-    const char* chars() const { return this->m_str; }
-    size_t len() const { return this->m_len; }
+    inline const char* chars() const
+    { return this->m_str; }
+
+    inline size_t len() const
+    { return this->m_len; }
 
     void push_back(char c)
     {
@@ -100,6 +103,12 @@ public:
         delete[] m_str;
         m_str = new_str;
         m_len += strlen;
+    }
+
+    void clear()
+    {
+        delete[] m_str;
+        m_len = m_size = 0;
     }
 
 private:

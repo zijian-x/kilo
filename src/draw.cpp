@@ -3,11 +3,11 @@
 
 #include "draw.hpp"
 #include "keycode.hpp"
-#include "strbuf.hpp"
+#include "str.hpp"
 
 static constexpr const char* KILO_VERS = "0.0.1";
 
-void print_welcome(editor_state& ed_state, strbuf& buf)
+void print_welcome(editor_state& ed_state, str& buf)
 {
     auto msg = fmt::format("Kilo editor -- version {}", KILO_VERS);
     if (msg.size() > ed_state.screen_col())
@@ -23,7 +23,7 @@ void print_welcome(editor_state& ed_state, strbuf& buf)
     buf.append(msg.c_str());
 }
 
-void draw_rows(editor_state& ed_state, strbuf& buf)
+void draw_rows(editor_state& ed_state, str& buf)
 {
     for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
         // TODO print file content
@@ -40,7 +40,7 @@ void draw_rows(editor_state& ed_state, strbuf& buf)
     }
 }
 
-void reset_cursor_pos(editor_state& ed_state, strbuf& buf)
+void reset_cursor_pos(editor_state& ed_state, str& buf)
 {
     buf.append(fmt::format("\x1b[{:d};{:d}H",
                 ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
@@ -48,7 +48,7 @@ void reset_cursor_pos(editor_state& ed_state, strbuf& buf)
 
 void refresh_screen(editor_state& ed_state)
 {
-    auto buf = strbuf();
+    auto buf = str();
 
     buf.append(esc_char::HIDE_CURSOR);
     buf.append(esc_char::CLEAR_CURSOR_POS);
