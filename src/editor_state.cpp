@@ -2,15 +2,17 @@
 #include "utils.hpp"
 #include "keycode.hpp"
 
-editor_row::editor_row() noexcept
-    : m_chars{}
-    , m_len{}
-{}
-
 editor_row::editor_row(size_t len) noexcept
     : m_chars{new char[len + 1]{}}
     , m_len{len}
 {}
+
+editor_row::editor_row(const char* str) noexcept
+    : m_len{std::strlen(str)}
+{
+    m_chars = new char[m_len + 1]{};
+    std::memcpy(m_chars, str, m_len);
+}
 
 editor_row::~editor_row()
 {
@@ -43,15 +45,11 @@ void swap(editor_row& lhs, editor_row& rhs)
     swap(lhs.m_chars, rhs.m_chars);
 }
 
-editor_content::editor_content(size_t size) noexcept
-    : m_ed_rows{new editor_row[size]{}}
-    , m_size{size}
-{}
+// TODO editor_content
 
 editor_state::editor_state() noexcept
     : m_c_row{}
     , m_c_col{}
-    , m_content{}
 {
     set_win_size();
 }
@@ -87,28 +85,16 @@ void editor_state::move_curor(int c)
         case editor_key::END:
             m_c_col = m_screen_col - 1;
             break;
-        case editor_key::DEL:
-            // TODO
+        case editor_key::DEL: // TODO
             break;
     }
 }
 
-std::optional<std::pair<unsigned int, unsigned int>>
-editor_state::get_win_size()
+void editor_state::set_win_size()
 {
     winsize ws;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
-        return {};
-    return std::make_pair(ws.ws_row, ws.ws_col);
-}
-
-void editor_state::set_win_size()
-{
-    auto ws = get_win_size();
-    if (!ws.has_value())
         die("get_win_size");
-
-    auto [row, col] = ws.value();
-    m_screen_row = row;
-    m_screen_col = col;
+    m_screen_row = ws.ws_row;;
+    m_screen_col = ws.ws_col;;
 }
