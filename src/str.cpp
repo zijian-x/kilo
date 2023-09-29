@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <cctype>
 #include <cstring>
+#include <limits>
 
 str::str(const char* str)
 {
@@ -68,26 +69,30 @@ void str::push_back(char c)
     m_str[m_len] = 0;
 }
 
-str& str::append(const char* str)
+str& str::append(const char* str, std::size_t count)
 {
-    auto strlen = std::strlen(str);
+    auto copy_len = std::min(std::strlen(str), count);
+    if (!copy_len)
+        return *this;
+
     if (!m_size) {
-        m_size = strlen + 1;
+        m_size = copy_len + 1;
     } else {
-        while (m_size < m_len + strlen + 1) {
+        while (m_size < m_len + copy_len + 1)
             m_size <<= 1;
-        }
     }
 
-    auto* new_str = new char[m_size];
-    if (!new_str)
+    auto* newbuf = new char[m_size];
+    if (!newbuf)
         die("new[] alloc");
 
-    std::memcpy(new_str, m_str, m_len);
-    std::strcpy(new_str + m_len, str);
+    std::memcpy(newbuf, m_str, m_len);
+    std::memcpy(newbuf + m_len, str, copy_len);
+
     delete[] m_str;
-    m_str = new_str;
-    m_len += strlen;
+    m_str = newbuf;
+    m_len += copy_len;
+    m_str[m_len] = '\0';
 
     return *this;
 }

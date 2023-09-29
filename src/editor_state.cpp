@@ -53,6 +53,8 @@ void editor_state::move_curor(int c)
         case editor_key::LEFT:
             if (m_c_col)
                 --m_c_col;
+            else if (m_coloff)
+                --m_coloff;
             break;
         case editor_key::DOWN:
             // TODO refactor to a function taking $n$ row
@@ -70,6 +72,8 @@ void editor_state::move_curor(int c)
         case editor_key::RIGHT:
             if (m_c_col < m_screen_col - 1)
                 ++m_c_col;
+            else if (m_coloff < col_max_len() - m_screen_col)
+                ++m_coloff;
             break;
         case editor_key::PAGE_UP:
             m_c_row = 0; // FIXME move cursor to the top/bottom for now
@@ -95,4 +99,12 @@ void editor_state::set_win_size()
         die("get_win_size");
     m_screen_row = ws.ws_row;;
     m_screen_col = ws.ws_col;;
+}
+
+std::size_t editor_state::col_max_len()
+{
+    auto max_len = [](const str& lhs, const str& rhs) {
+        return lhs.len() < rhs.len();
+    };
+    return std::max_element(begin(m_content), end(m_content), max_len)->len();
 }

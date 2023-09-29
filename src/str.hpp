@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <utility>
 
 class str
@@ -23,7 +24,8 @@ public:
     inline char& back() const { return const_cast<str&>(*this).back(); }
 
     void push_back(char c);
-    str& append(const char* str);
+    str& append(const char* str,
+            std::size_t count = std::numeric_limits<std::size_t>::max());
     str& clear();
     str& remove_newline();
 

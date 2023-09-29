@@ -74,5 +74,6 @@ private:
     unsigned int m_rowoff{}, m_coloff{};
     std::vector<str> m_content;
 
+    std::size_t col_max_len();
     void set_win_size();
 };

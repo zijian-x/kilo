@@ -3,6 +3,7 @@
 #include "read_input.hpp"
 #include "termios_raii.hpp"
 #include "str.hpp"
+#include <fmt/core.h>
 
 static editor_state ed_state;
 

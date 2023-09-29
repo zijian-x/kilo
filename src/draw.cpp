@@ -26,9 +26,12 @@ void draw_rows(editor_state& ed_state, str& buf)
 {
     for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
         const auto& lines = ed_state.content();
-        auto file_row = i + ed_state.rowoff();
-        if (file_row < lines.size()) {
-            buf.append(lines[file_row].chars() + ed_state.coloff());
+
+        if (auto file_row = i + ed_state.rowoff(); file_row < lines.size()) {
+            const auto& printline = lines[file_row];
+            auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
+                    printline.len());
+            buf.append(printline.chars() + start_index, ed_state.screen_col());
         } else if (!lines.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
