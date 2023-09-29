@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "str.hpp"
-#include "utils.hpp"
+#include "die.hpp"
 
 namespace file
 {

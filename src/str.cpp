@@ -1,5 +1,5 @@
 #include "str.hpp"
-#include "utils.hpp"
+#include "die.hpp"
 #include <cctype>
 #include <cstring>
 #include <limits>

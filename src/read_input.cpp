@@ -1,5 +1,5 @@
 #include "read_input.hpp"
-#include "utils.hpp"
+#include "die.hpp"
 
 static std::optional<int> read_arrow_key()
 {

@@ -3,7 +3,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "utils.hpp"
+#include "die.hpp"
 
 class termios_raii
 {

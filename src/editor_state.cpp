@@ -1,5 +1,5 @@
 #include "editor_state.hpp"
-#include "utils.hpp"
+#include "die.hpp"
 #include "keycode.hpp"
 
 #include <sys/ioctl.h>
