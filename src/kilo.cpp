@@ -2,13 +2,20 @@
 #include "file_raii.hpp"
 #include "read_input.hpp"
 #include "termios_raii.hpp"
-#include <iostream>
+#include "str.hpp"
 
 static editor_state ed_state;
 
 void open_file(const char* filename)
 {
+    using namespace file;
+
     auto fp = file_raii(filename);
+    char* buf = nullptr;
+    while ((buf = fp.nextline()) != nullptr || !fp.eof()) {
+        auto line = str(std::move(buf)).remove_newline();
+        ed_state.content().push_back(std::move(line));
+    }
 }
 
 static void test()
@@ -17,6 +24,8 @@ static void test()
 
 int main(int argc, char** argv)
 {
+    // test(); return 0;
+
     static termios_raii t_ios;
     t_ios.enable_raw_mode();
 

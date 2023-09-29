@@ -1,6 +1,7 @@
 #include "editor_state.hpp"
 #include "utils.hpp"
 #include "keycode.hpp"
+#include "logger.hpp"
 
 #include <sys/ioctl.h>
 #include <utility>
@@ -42,8 +43,6 @@ void editor_content::push_back(str row)
 }
 
 editor_state::editor_state()
-    : m_c_row{}
-    , m_c_col{}
 {
     set_win_size();
 }
@@ -56,12 +55,17 @@ void editor_state::move_curor(int c)
                 --m_c_col;
             break;
         case editor_key::DOWN:
+            // TODO refactor to a function taking $n$ row
             if (m_c_row < m_screen_row - 1)
                 ++m_c_row;
+            else if (m_rowoff < m_content.size() - m_screen_row)
+                ++m_rowoff;
             break;
         case editor_key::UP:
             if (m_c_row)
                 --m_c_row;
+            else if (m_rowoff)
+                --m_rowoff;
             break;
         case editor_key::RIGHT:
             if (m_c_col < m_screen_col - 1)

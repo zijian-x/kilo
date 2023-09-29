@@ -18,12 +18,15 @@ SAN := -fsanitize=address,undefined
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
 
-.PHONY: all run init debug compile clean fclean leak generate_cc
+.PHONY: all run init debug compile clean fclean leak generate_cc test
 
 all: compile
 
 run: compile
-	./$(NAME)
+	./$(NAME) $(arg1)
+
+test: $(NAME)
+	./$(NAME) file
 
 debug: CFLAGS += -g
 

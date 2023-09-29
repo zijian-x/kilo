@@ -1,4 +1,3 @@
-// TODO remove fmt dependency
 #include <fmt/format.h>
 
 #include "draw.hpp"
@@ -26,9 +25,11 @@ void print_welcome(editor_state& ed_state, str& buf)
 void draw_rows(editor_state& ed_state, str& buf)
 {
     for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
-        // TODO print file content
-
-        if (i == ed_state.screen_row() / 3) {
+        const auto& lines = ed_state.content();
+        auto file_row = i + ed_state.rowoff();
+        if (file_row < lines.size()) {
+            buf.append(lines[file_row].chars() + ed_state.coloff());
+        } else if (!lines.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
             buf.push_back('~');
