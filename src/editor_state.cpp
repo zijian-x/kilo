@@ -1,7 +1,6 @@
 #include "editor_state.hpp"
 #include "utils.hpp"
 #include "keycode.hpp"
-#include "logger.hpp"
 
 #include <sys/ioctl.h>
 #include <utility>
@@ -44,7 +43,11 @@ void editor_content::push_back(str row)
 
 editor_state::editor_state()
 {
-    set_win_size();
+    winsize ws;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
+        die("get_win_size");
+    m_screen_row = ws.ws_row;;
+    m_screen_col = ws.ws_col;;
 }
 
 void editor_state::move_curor(int c)
@@ -55,6 +58,7 @@ void editor_state::move_curor(int c)
                 --m_c_col;
             else if (m_coloff)
                 --m_coloff;
+            // TODO move left to the end of the prev line
             break;
         case editor_key::DOWN:
             // TODO refactor to a function taking $n$ row
@@ -72,8 +76,9 @@ void editor_state::move_curor(int c)
         case editor_key::RIGHT:
             if (m_c_col < m_screen_col - 1)
                 ++m_c_col;
-            else if (m_coloff < col_max_len() - m_screen_col)
+            else if (m_coloff < m_content[m_c_row].len() - m_screen_col)
                 ++m_coloff;
+            // TODO move right to the beginning of the next line
             break;
         case editor_key::PAGE_UP:
             m_c_row = 0; // FIXME move cursor to the top/bottom for now
@@ -90,21 +95,4 @@ void editor_state::move_curor(int c)
         case editor_key::DEL: // TODO
             break;
     }
-}
-
-void editor_state::set_win_size()
-{
-    winsize ws;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
-        die("get_win_size");
-    m_screen_row = ws.ws_row;;
-    m_screen_col = ws.ws_col;;
-}
-
-std::size_t editor_state::col_max_len()
-{
-    auto max_len = [](const str& lhs, const str& rhs) {
-        return lhs.len() < rhs.len();
-    };
-    return std::max_element(begin(m_content), end(m_content), max_len)->len();
 }
