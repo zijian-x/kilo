@@ -5,42 +5,6 @@
 #include <sys/ioctl.h>
 #include <utility>
 
-editor_content::~editor_content()
-{
-    delete[] m_rows;
-}
-
-editor_content::editor_content(const editor_content& content)
-    : m_size{content.m_size}
-{
-    m_rows = new str[m_size]{};
-    for (size_t i = 0; i < m_size; ++i)
-        m_rows[i] = content.m_rows[i];
-}
-
-editor_content::editor_content(editor_content&& content)
-    : m_rows{std::exchange(content.m_rows, nullptr)}
-    , m_size{content.m_size}
-{ }
-
-editor_content& editor_content::operator=(editor_content content)
-{
-    swap(*this, content);
-    return *this;
-}
-
-void swap(editor_content& lhs, editor_content& rhs)
-{
-    using std::swap;
-    swap(lhs.m_rows, rhs.m_rows);
-    swap(lhs.m_size, rhs.m_size);
-}
-
-void editor_content::push_back(str row)
-{
-    // TODO
-}
-
 editor_state::editor_state()
 {
     winsize ws;

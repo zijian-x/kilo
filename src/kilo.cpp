@@ -25,7 +25,7 @@ static void test()
 
 int main(int argc, char** argv)
 {
-    // test(); return 0;
+    test(); return 0;
 
     static termios_raii t_ios;
     t_ios.enable_raw_mode();
