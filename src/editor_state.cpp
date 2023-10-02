@@ -40,7 +40,7 @@ void editor_state::move_curor(int c)
         case editor_key::RIGHT:
             if (m_c_col < m_screen_col - 1)
                 ++m_c_col;
-            else if (m_coloff < m_content[m_c_row].len() - m_screen_col)
+            else if (m_coloff < m_content[m_c_row].render().len() - m_screen_col)
                 ++m_coloff;
             // TODO move right to the beginning of the next line
             break;

@@ -57,6 +57,8 @@ public:
 
     str& insert(std::size_t, const str&);
 
+    // TODO replace
+
     str& clear();
 
     str& remove_newline();

@@ -28,7 +28,7 @@ void draw_rows(editor_state& ed_state, str& buf)
         const auto& lines = ed_state.content();
 
         if (auto file_row = i + ed_state.rowoff(); file_row < lines.size()) {
-            const auto& printline = lines[file_row];
+            const auto& printline = lines[file_row].render();
             auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
                     printline.len());
             buf.append(printline.chars() + start_index, ed_state.screen_col());

@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+static constexpr unsigned short TABSTOP = 8;
+
 class editor_row
 {
 public:
@@ -16,11 +18,14 @@ public:
     {
         m_row = std::forward<T>(t);
         m_render = m_row;
-        for (std::size_t i = 0; i < m_render.len(); ++i) {
-            if (m_render[i] == '\t')
-                m_render.insert(i, 8, ' ');
-        }
+        // TODO render.replace all tab with spaces
     }
+
+    const str& content() const
+    { return this->m_row; }
+
+    const str& render() const
+    { return this->m_row; }
 
 private:
     str m_row;
@@ -62,11 +67,11 @@ public:
     const std::size_t& rowoff() const
     { return this->m_rowoff; }
 
-    std::vector<str>& content()
+    std::vector<editor_row>& content()
     { return this->m_content; }
 
-    const std::vector<str>& content() const
-    { return const_cast<editor_state&>(*this).content(); }
+    const std::vector<editor_row>& content() const
+    { return this->m_content; }
 
     std::size_t& coloff()
     { return this->m_coloff; }
@@ -80,5 +85,5 @@ private:
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<str> m_content;
+    std::vector<editor_row> m_content;
 };

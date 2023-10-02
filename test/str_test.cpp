@@ -198,3 +198,5 @@ TEST_F(StrTest, MethodRmNewline)
 
     ASSERT_STREQ(s.chars(), buf);
 }
+
+// TODO replace tests
