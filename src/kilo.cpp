@@ -7,7 +7,7 @@
 
 static editor_state ed_state;
 
-void open_file(const char* filename)
+void read_file(const char* filename)
 {
     using namespace file;
 
@@ -19,20 +19,13 @@ void open_file(const char* filename)
     }
 }
 
-static void test()
-{
-}
-
 int main(int argc, char** argv)
 {
-    test(); return 0;
-
     static termios_raii t_ios;
     t_ios.enable_raw_mode();
 
-    if (argc >= 2) {
-        open_file(argv[1]);
-    }
+    if (argc >= 2)
+        read_file(argv[1]);
 
     while (1) {
         refresh_screen(ed_state);

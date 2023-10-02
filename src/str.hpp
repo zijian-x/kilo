@@ -9,18 +9,18 @@ class str
 public:
     str() = default;
 
-    str(const char* str);
+    str(const char*);
 
-    str(char*&& str);
+    str(char*&&);
 
     ~str()
     { delete[] m_str; }
 
-    str(const str& buf);
+    str(const str&);
 
-    str(str&& buf);
+    str(str&&);
 
-    str& operator=(str buf);
+    str& operator=(str);
 
     char& operator[](std::size_t i)
     { return m_str[i]; }
@@ -28,7 +28,7 @@ public:
     const char& operator[](std::size_t i) const
     { return m_str[i]; }
 
-    friend void swap(str& lhs, str& rhs);
+    friend void swap(str&, str&);
 
     const char* chars() const
     { return this->m_str; }
@@ -48,7 +48,7 @@ public:
     char& back() const
     { return const_cast<str&>(*this).back(); }
 
-    void push_back(char c);
+    void push_back(char);
 
     str& append(const str&,
             std::size_t count = std::numeric_limits<std::size_t>::max());
@@ -62,9 +62,9 @@ public:
     str& remove_newline();
 
 private:
-    char* m_str = new char[1]{};
+    char* m_str{nullptr};
     std::size_t m_len{0};
-    std::size_t m_size{1};
+    std::size_t m_size{0};
 
     void try_realloc_str(std::size_t extra_len);
 };

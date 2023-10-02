@@ -17,7 +17,8 @@ public:
         m_row = std::forward<T>(t);
         m_render = m_row;
         for (std::size_t i = 0; i < m_render.len(); ++i) {
-            // TODO insert spaces at the position of tab
+            if (m_render[i] == '\t')
+                m_render.insert(i, 8, ' ');
         }
     }
 

@@ -14,7 +14,6 @@ str::str(const char* s)
     m_len = std::strlen(s);
     m_size = m_len + 1;
 
-    delete[] m_str;
     m_str = new char[m_size];
     std::strcpy(m_str, s);
 }
@@ -30,8 +29,10 @@ str::str(const str& s)
     : m_len{s.m_len}
     , m_size{s.m_size}
 {
-    m_str = new char[m_size]{};
-    std::strcpy(m_str, s.m_str);
+    if (m_size) {
+        m_str = new char[m_size]{};
+        std::strcpy(m_str, s.m_str);
+    }
 }
 
 str::str(str&& s)
@@ -90,6 +91,7 @@ str& str::insert(std::size_t index, std::size_t count, char c)
     std::memmove(m_str + index + count, m_str + index, m_len - index + 1);
     for (size_t i = 0; i < count; ++i)
         m_str[index + i] = c;
+    m_len += count;
     return *this;
 }
 
@@ -103,13 +105,14 @@ str& str::insert(std::size_t index, const str& s)
     try_realloc_str(m_len + s.m_len);
     std::memmove(m_str + index + s.m_len, m_str + index, m_len - index + 1);
     std::memcpy(m_str + index, s.m_str, s.m_len);
+    m_len += s.m_len;
     return *this;
 }
 
 str& str::clear()
 {
-    delete[] m_str;
-    m_len = m_size = 0;
+    m_str[0] = 0;
+    m_len = 0;
     return *this;
 }
 
@@ -129,11 +132,13 @@ void str::try_realloc_str(std::size_t new_len)
         return;
 
     m_size = new_len + 1;
-    auto* new_str = new char[m_size];
+    auto* new_str = new char[m_size]{};
     if (!new_str)
         die("new[] alloc");
 
-    std::strcpy(new_str, m_str);
-    delete[] m_str;
+    if (m_str) {
+        std::strcpy(new_str, m_str);
+        delete[] m_str;
+    }
     m_str = new_str;
 }
