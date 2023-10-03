@@ -155,9 +155,11 @@ str& str::replace(std::size_t index, std::size_t count,
         die("index out of bound");
 
     if (count == count2) {
-        try_realloc_str(index + count2);
-        for (size_t i = 0; i < count2; ++i)
+        auto new_len = index + count;
+        try_realloc_str(new_len);
+        for (size_t i = 0; i < count; ++i)
             m_str[index + i] = c;
+        m_len = std::max(m_len, new_len);
     } else if (count < count2) {
         // 0 1 2 3 4 5 6 7 8
         // a a a a a            idx = 2, cnt = 2, cnt2 = 4, char = b

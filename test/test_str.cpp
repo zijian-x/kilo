@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <cstring>
@@ -6,7 +7,7 @@
 
 #include "../src/str.hpp"
 
-class StrTest : public ::testing::Test
+class test_str : public ::testing::Test
 {
 protected:
     str s;
@@ -26,12 +27,12 @@ protected:
     std::mt19937 mt{};
 };
 
-TEST_F(StrTest, DefaultCtor)
+TEST_F(test_str, default_ctor)
 {
     ASSERT_EQ(s.chars(), nullptr);
 }
 
-TEST_F(StrTest, CharPtrCtor)
+TEST_F(test_str, char_ptr_ctor)
 {
     auto s = str(line);
     ASSERT_STREQ(s.chars(), line);
@@ -39,7 +40,7 @@ TEST_F(StrTest, CharPtrCtor)
     ASSERT_EQ(s.len(), std::strlen(line));
 }
 
-TEST_F(StrTest, MovedCharPtrCtor)
+TEST_F(test_str, moved_char_ptr_ctor)
 {
     auto* ptr = new char[std::strlen(line) + 1]{};
     std::strcpy(ptr, line);
@@ -51,7 +52,7 @@ TEST_F(StrTest, MovedCharPtrCtor)
     ASSERT_STREQ(s.chars(), line);
 }
 
-TEST_F(StrTest, CopyCtor)
+TEST_F(test_str, copy_ctor)
 {
     auto s1 = str();
     auto s2 = str(line);
@@ -62,7 +63,7 @@ TEST_F(StrTest, CopyCtor)
     ASSERT_NE(s1.chars(), s2.chars());
 }
 
-TEST_F(StrTest, MoveCtor)
+TEST_F(test_str, move_ctor)
 {
     auto s1 = str();
     auto s2 = str(line);
@@ -75,7 +76,7 @@ TEST_F(StrTest, MoveCtor)
     ASSERT_EQ(s1.len(), std::strlen(line));
 }
 
-TEST_F(StrTest, OperatorEqual)
+TEST_F(test_str, opertor_equal)
 {
     auto tmp = str(line);
     s = tmp;
@@ -85,19 +86,19 @@ TEST_F(StrTest, OperatorEqual)
     ASSERT_EQ(s.len(), tmp.len());
 }
 
-TEST_F(StrTest, OperatorEqualMove)
+TEST_F(test_str, operator_equal_move)
 {
     auto tmp = str(line);
     s = std::move(tmp);
 }
 
-TEST_F(StrTest, Front)
+TEST_F(test_str, Front)
 {
     s = str(line);
     ASSERT_EQ(s.front(), line[0]);
 }
 
-TEST_F(StrTest, BackAndPushBack)
+TEST_F(test_str, back_and_push_back)
 {
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         s.push_back(line[i]);
@@ -105,7 +106,7 @@ TEST_F(StrTest, BackAndPushBack)
     }
 }
 
-TEST_F(StrTest, Append)
+TEST_F(test_str, append)
 {
     for (size_t i = 0; i < 5; ++i) {
         s.append(line);
@@ -118,9 +119,10 @@ TEST_F(StrTest, Append)
     s.clear();
     cmp.clear();
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, Insert1)
+TEST_F(test_str, insert1)
 {
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         s.insert(i, 1, line[i]);
@@ -128,13 +130,15 @@ TEST_F(StrTest, Insert1)
     }
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 
     s.clear();
     cmp.clear();
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, Insert2)
+TEST_F(test_str, insert2)
 {
     const auto line = std::string{"Lorem ipsum dolor sit amet, consectetur:"
                                   "adipiscing elit. Quantum Aristoxeni"
@@ -166,9 +170,10 @@ TEST_F(StrTest, Insert2)
     s.clear();
     cmp.clear();
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, InsertStr)
+TEST_F(test_str, insert_str)
 {
     const auto line = str{ "Lorem ipsum dolor sit amet, consectetur:" };
 
@@ -185,9 +190,10 @@ TEST_F(StrTest, InsertStr)
     s.clear();
     cmp.clear();
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, RmNewline)
+TEST_F(test_str, remove_newline)
 {
     const auto* buf = "hello, world";
     s = buf;
@@ -195,9 +201,10 @@ TEST_F(StrTest, RmNewline)
     s.remove_newline();
 
     ASSERT_STREQ(s.chars(), buf);
+    ASSERT_EQ(s.len(), std::strlen(buf));
 }
 
-TEST_F(StrTest, ReplaceCntEqualCnt2)
+TEST_F(test_str, replace1)
 {
     const auto* line = "Lorem ipsum dolor sit amet, consectetur:"
                        "adipiscing elit. Quantum Aristoxeni"
@@ -214,6 +221,7 @@ TEST_F(StrTest, ReplaceCntEqualCnt2)
 
     s = str(line);
     cmp = std::string(line);
+    ASSERT_EQ(s.len(), cmp.size());
 
     auto dis = std::uniform_int_distribution<size_t>{1, 10};
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
@@ -221,10 +229,11 @@ TEST_F(StrTest, ReplaceCntEqualCnt2)
         s.replace(i, cnt, cnt, 'c');
         cmp.replace(i, cnt, cnt, 'c');
         ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
     }
 }
 
-TEST_F(StrTest, ReplaceCntEqualCnt2Simple)
+TEST_F(test_str, replace2)
 {
     s = line;
     cmp = std::string(s.chars());
@@ -233,9 +242,10 @@ TEST_F(StrTest, ReplaceCntEqualCnt2Simple)
     cmp.replace(2, 2, 4, 'b');
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, ReplaceCntLessCnt2)
+TEST_F(test_str, replace3)
 {
     s = str(line);
     cmp = std::string(line);
@@ -250,10 +260,11 @@ TEST_F(StrTest, ReplaceCntLessCnt2)
         s.replace(i, cnt, cnt + extra, c);
         cmp.replace(i, cnt, cnt + extra, c);
         ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
     }
 }
 
-TEST_F(StrTest, ReplaceCntGreaterCnt2Simple)
+TEST_F(test_str, replace4)
 {
     s = line;
     cmp = std::string(s.chars());
@@ -262,9 +273,10 @@ TEST_F(StrTest, ReplaceCntGreaterCnt2Simple)
     cmp.replace(5, 4, 2, 'b');
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, Replace2)
+TEST_F(test_str, replace5)
 {
     s = "aaaaa";
     cmp = "aaaaa";
@@ -273,9 +285,10 @@ TEST_F(StrTest, Replace2)
     cmp.replace(3, 10, 8, 'b');
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }
 
-TEST_F(StrTest, ReplaceCntGreaterCnt2)
+TEST_F(test_str, replace6)
 {
     s = str(line);
     cmp = std::string(line);
@@ -290,5 +303,21 @@ TEST_F(StrTest, ReplaceCntGreaterCnt2)
         s.replace(i, cnt + extra, cnt, c);
         cmp.replace(i, cnt + extra, cnt, c);
         ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
     }
+}
+
+TEST_F(test_str, replace7)
+{
+    auto cmp = std::string("hello\tworld\t\t!");
+    s = cmp.c_str();
+
+    for (size_t i = 0; i < s.len(); ++i) {
+        if (s[i] == '\t')
+            s.replace(i, 1, 8, ' ');
+        if (cmp[i] == '\t')
+            cmp.replace(i, 1, 8, ' ');
+    }
+
+    ASSERT_STREQ(s.chars(), cmp.c_str());
 }
