@@ -57,11 +57,13 @@ public:
 
     str& insert(std::size_t, const str&);
 
-    // TODO replace
+    str& replace(std::size_t, std::size_t, std::size_t, char);
 
     str& clear();
 
     str& remove_newline();
+
+    // TODO iterators
 
 private:
     char* m_str{nullptr};

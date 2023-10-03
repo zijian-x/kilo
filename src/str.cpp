@@ -65,7 +65,7 @@ void str::push_back(char c)
 str& str::append(const str& s, std::size_t n)
 {
     auto copy_len = std::min(std::strlen(s.chars()), n);
-    if (!copy_len)
+    if (!copy_len) [[unlikely]]
         return *this;
 
     try_realloc_str(m_len + copy_len + 1);
@@ -78,9 +78,9 @@ str& str::append(const str& s, std::size_t n)
 
 str& str::insert(std::size_t index, std::size_t count, char c)
 {
-    if (!count)
+    if (!count) [[unlikely]]
         return *this;
-    if (index > m_len)
+    if (index > m_len) [[unlikely]]
         die("insert index out of range");
 
     try_realloc_str(m_len + count);
@@ -88,7 +88,10 @@ str& str::insert(std::size_t index, std::size_t count, char c)
                         // 1. arg = index + count = 2 + 2 = 4
                         // 2. arg = index = 2
                         // 3. arg = m_len - index + 1 = 6 - 2 + 1 = 5
-    std::memmove(m_str + index + count, m_str + index, m_len - index + 1);
+    auto* dest = m_str + index + count;
+    auto* src = m_str + index;
+    auto n = m_len - index + 1;
+    std::memmove(dest, src, n);
     for (size_t i = 0; i < count; ++i)
         m_str[index + i] = c;
     m_len += count;
@@ -97,9 +100,9 @@ str& str::insert(std::size_t index, std::size_t count, char c)
 
 str& str::insert(std::size_t index, const str& s)
 {
-    if (!s.m_len)
+    if (!s.m_len) [[unlikely]]
         return *this;
-    if (index > m_len)
+    if (index > m_len) [[unlikely]]
         die("insert index out of range");
 
     try_realloc_str(m_len + s.m_len);
@@ -141,4 +144,71 @@ void str::try_realloc_str(std::size_t new_len)
         delete[] m_str;
     }
     m_str = new_str;
+}
+
+str& str::replace(std::size_t index, std::size_t count,
+        std::size_t count2, char c)
+{
+    if (!count || !count2) [[unlikely]]
+        return *this;
+    if (index > m_len) [[unlikely]]
+        die("index out of bound");
+
+    if (count == count2) {
+        try_realloc_str(index + count2);
+        for (size_t i = 0; i < count2; ++i)
+            m_str[index + i] = c;
+    } else if (count < count2) {
+        // 0 1 2 3 4 5 6 7 8
+        // a a a a a            idx = 2, cnt = 2, cnt2 = 4, char = b
+        // a a b b b b a
+        //  realloc = m_len - std::min(count, m_len - index) + count2 = 5 - 2 + 4 = 7
+        auto new_len = m_len + count2 - std::min(count, m_len - index);
+        try_realloc_str(new_len);
+
+        //  std::memmove():
+        //      1. arg dest: idx + cnt2 = 2 + 4 = 6
+        //      2. arg src: idx + cnt = 2 + 2 = 4
+        //      3. arg n: m_len - idx - cnt = 5 - 2 - 2 = 1
+        auto* dest = m_str + index + count2;
+        auto* src = m_str + index + count;
+        auto n = m_len - index - count;
+        m_len = new_len;
+        if (dest < m_str + m_len)
+            std::memmove(dest, src, n);
+        for (size_t i = 0; i < count2; ++i)
+            m_str[index + i] = c;
+    } else {
+        // 0 1 2 3 4 5 6 7
+        // a a a a a        index = 1, count = 10, count2 = 5
+        // a b b b b b
+        auto replace = std::min(count, m_len - index);
+        for (size_t i = 0; i < replace; ++i)
+            m_str[index + i] = 0;
+
+        if (replace < count2) {
+            try_realloc_str(m_len + count2 - replace);
+            m_len = m_len + count2 - replace;
+        } else {
+            // 0 1 2 3 4 5 6 7 8    len = 9
+            // a a a a a c c c c    index = 1, count = 4, count2 = 2, char = b
+            // a b b c c c c
+            // std::memmove():
+            //      1. arg dest: 3 = index + count2
+            //      2. arg src: 5 = index + count
+            //      3. arg n: 4 = m_len - index - count = 9 - 1 - 4
+            auto* dest = m_str + index + count2;
+            auto* src = m_str + index + replace;
+            auto n = m_len - index - replace;
+            if (dest < m_str + m_len)
+                std::memmove(dest, src, n);
+            m_len -= replace - count2;
+        }
+
+        for (size_t i = 0; i < count2; ++i)
+            m_str[index + i] = c;
+        m_str[m_len] = 0;
+    }
+
+    return *this;
 }
