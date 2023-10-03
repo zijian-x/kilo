@@ -61,7 +61,7 @@ void scroll(editor_state& ed_state)
     auto& coloff = ed_state.coloff();
 
     r_col = 0;
-    if (c_row < screen_row)
+    if (c_row < ed_state.content().size())
         r_col = ed_state.content()[c_row].c_col_to_r_col(c_col);
 
     if (c_row < rowoff)

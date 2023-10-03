@@ -1,5 +1,6 @@
 #include "read_input.hpp"
 #include "die.hpp"
+#include "keycode.hpp"
 
 static std::optional<int> read_arrow_key()
 {
@@ -68,12 +69,21 @@ void process_key_press(editor_state& ed_state)
             write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
             std::exit(0);
             break;
+        case editor_key::PAGE_UP:
+            ed_state.c_row() = ed_state.rowoff();
+            for (size_t i = ed_state.screen_row(); i > 0; --i)
+                ed_state.move_curor(editor_key::UP);
+            break;
+        case editor_key::PAGE_DOWN:
+            ed_state.c_row() = std::min(ed_state.content().size(),
+                    ed_state.rowoff() + ed_state.screen_row() - 1);
+            for (size_t i = ed_state.screen_row(); i > 0; --i)
+                ed_state.move_curor(editor_key::DOWN);
+            break;
         case editor_key::UP:
         case editor_key::DOWN:
         case editor_key::RIGHT:
         case editor_key::LEFT:
-        case editor_key::PAGE_UP:
-        case editor_key::PAGE_DOWN:
         case editor_key::HOME:
         case editor_key::END:
         case editor_key::DEL:

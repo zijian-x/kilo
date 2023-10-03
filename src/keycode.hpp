@@ -30,7 +30,7 @@ static constexpr inline auto lookup = std::array<editor_key, 4>{
     editor_key::UP, editor_key::DOWN, editor_key::LEFT, editor_key::RIGHT
 };
 
-static constexpr inline editor_key get_key(char c)
+static constexpr editor_key get_key(char c)
 {
     auto e = std::find(begin(lookup), end(lookup), static_cast<editor_key>(c));
     if (e == end(lookup))
