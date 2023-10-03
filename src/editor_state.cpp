@@ -5,6 +5,25 @@
 #include <sys/ioctl.h>
 #include <utility>
 
+void editor_row::render_row()
+{
+    for (size_t i = 0; i < m_render.len(); ++i) {
+        if (m_render[i] == '\t')
+            m_render.replace(i, 1, TABSTOP, ' ');
+    }
+}
+
+std::size_t editor_row::c_col_to_r_col(size_t c_col)
+{
+    size_t r_col = 0;
+    for (size_t i = 0; i < c_col; ++i) {
+        if (m_row[i] == '\t')
+            r_col += (TABSTOP - 1) - (r_col % TABSTOP);
+        ++r_col;
+    }
+    return r_col;
+}
+
 editor_state::editor_state()
 {
     winsize ws;
@@ -18,43 +37,39 @@ void editor_state::move_curor(int c)
 {
     switch (c) {
         case editor_key::LEFT:
-            if (m_c_col)
+            if (m_c_col) {
                 --m_c_col;
-            else if (m_coloff)
-                --m_coloff;
-            // TODO move left to the end of the prev line
+            } else if (m_c_row > 0) {
+                --m_c_row;
+                m_c_col = m_content[m_c_row].content().len();
+            }
+            break;
+        case editor_key::RIGHT:
+            if (m_c_col < m_content[m_c_row].content().len())
+                ++m_c_col;
+            else if (m_c_row < m_content.size())
+                ++m_c_row, m_c_col = 0;
             break;
         case editor_key::DOWN:
             // TODO refactor to a function taking $n$ row
             if (m_c_row < m_screen_row - 1)
                 ++m_c_row;
-            else if (m_rowoff < m_content.size() - m_screen_row)
-                ++m_rowoff;
             break;
         case editor_key::UP:
             if (m_c_row)
                 --m_c_row;
-            else if (m_rowoff)
-                --m_rowoff;
-            break;
-        case editor_key::RIGHT:
-            if (m_c_col < m_screen_col - 1)
-                ++m_c_col;
-            else if (m_coloff < m_content[m_c_row].render().len() - m_screen_col)
-                ++m_coloff;
-            // TODO move right to the beginning of the next line
             break;
         case editor_key::PAGE_UP:
-            m_c_row = 0; // FIXME move cursor to the top/bottom for now
+            m_c_row = 0;
             break;
         case editor_key::PAGE_DOWN:
-            while (m_c_row < m_screen_row - 1) // FIXME
+            while (m_c_row < m_screen_row - 1)
                 ++m_c_row;
         case editor_key::HOME:
             m_c_col = 0;
             break;
         case editor_key::END:
-            m_c_col = m_screen_col - 1;
+            m_c_col = m_content[m_c_row].content().len(); // FIXME move up/down exceeding the next lines len
             break;
         case editor_key::DEL: // TODO
             break;

@@ -18,18 +18,22 @@ public:
     {
         m_row = std::forward<T>(t);
         m_render = m_row;
-        // TODO render.replace all tab with spaces
+        render_row();
     }
 
     const str& content() const
     { return this->m_row; }
 
     const str& render() const
-    { return this->m_row; }
+    { return this->m_render; }
+
+    std::size_t c_col_to_r_col(std::size_t);
 
 private:
     str m_row;
     str m_render;
+
+    void render_row();
 };
 
 class editor_state
@@ -54,6 +58,12 @@ public:
 
     const std::size_t& c_row() const
     { return this->m_c_row; }
+
+    std::size_t& r_col()
+    { return this->m_r_col; }
+
+    const std::size_t& r_col() const
+    { return this->m_r_col; }
 
     std::size_t& c_col()
     { return this->m_c_col; }
@@ -83,7 +93,7 @@ public:
 
 private:
     std::size_t m_screen_row{}, m_screen_col{};
-    std::size_t m_c_row{}, m_c_col{};
+    std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
     std::vector<editor_row> m_content;
 };

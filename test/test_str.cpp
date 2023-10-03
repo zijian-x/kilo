@@ -320,4 +320,5 @@ TEST_F(test_str, replace7)
     }
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
 }

@@ -47,13 +47,38 @@ void draw_rows(editor_state& ed_state, str& buf)
 void reset_cursor_pos(editor_state& ed_state, str& buf)
 {
     buf.append(fmt::format("\x1b[{:d};{:d}H",
-                ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
+                ed_state.c_row() + 1, ed_state.r_col() + 1).c_str());
+}
+
+void scroll(editor_state& ed_state)
+{
+    auto& screen_row = ed_state.screen_row();
+    auto& screen_col = ed_state.screen_col();
+    auto& c_row = ed_state.c_row();
+    auto& c_col = ed_state.c_col();
+    auto& r_col = ed_state.r_col();
+    auto& rowoff = ed_state.rowoff();
+    auto& coloff = ed_state.coloff();
+
+    r_col = 0;
+    if (c_row < screen_row)
+        r_col = ed_state.content()[c_row].c_col_to_r_col(c_col);
+
+    if (c_row < rowoff)
+        rowoff = c_row;
+    if (c_row >= rowoff + screen_row)
+        rowoff = c_row - screen_row + 1;
+    if (r_col < coloff)
+        coloff = r_col;
+    if (r_col >= coloff + screen_col)
+        coloff = r_col - screen_col + 1;
 }
 
 void refresh_screen(editor_state& ed_state)
 {
-    auto buf = str();
+    scroll(ed_state);
 
+    auto buf = str();
     buf.append(esc_char::HIDE_CURSOR);
     buf.append(esc_char::CLEAR_CURSOR_POS);
     draw_rows(ed_state, buf);
