@@ -59,6 +59,8 @@ public:
 
     str& replace(std::size_t, std::size_t, std::size_t, char);
 
+    str& resize(std::size_t, char c = '\0');
+
     str& clear();
 
     str& remove_newline();

@@ -76,6 +76,17 @@ str& str::append(const str& s, std::size_t n)
     return *this;
 }
 
+str& str::resize(std::size_t count, char c)
+{
+    try_realloc_str(count);
+    for (auto i = m_len; i < count; ++i)
+        m_str[i] = c;
+    m_len = count;
+    m_str[m_len] = 0;
+
+    return *this;
+}
+
 str& str::insert(std::size_t index, std::size_t count, char c)
 {
     if (!count) [[unlikely]]

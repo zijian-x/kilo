@@ -21,7 +21,7 @@ LIB := -lfmt
 SAN := -fsanitize=address,undefined
 LDFLAGS := $(SAN) $(LIB)
 
-TEST_ARGUMENTS := --gtest_filter=test_editor_row.*
+TEST_ARGUMENTS := --gtest_filter=test_str.*
 
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
@@ -34,7 +34,7 @@ test_obj := $(test_src:.cpp=.o)
 all: compile
 
 run: compile
-	./$(MAIN) $(arg1)
+	./$(MAIN) file
 
 print:
 	@echo $(test_src)

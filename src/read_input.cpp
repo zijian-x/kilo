@@ -75,7 +75,7 @@ void process_key_press(editor_state& ed_state)
                 ed_state.move_curor(editor_key::UP);
             break;
         case editor_key::PAGE_DOWN:
-            ed_state.c_row() = std::min(ed_state.content().size(),
+            ed_state.c_row() = std::min(ed_state.content().size() - 1,
                     ed_state.rowoff() + ed_state.screen_row() - 1);
             for (size_t i = ed_state.screen_row(); i > 0; --i)
                 ed_state.move_curor(editor_key::DOWN);

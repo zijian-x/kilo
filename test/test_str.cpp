@@ -193,6 +193,36 @@ TEST_F(test_str, insert_str)
     ASSERT_EQ(s.len(), cmp.size());
 }
 
+TEST_F(test_str, resize1)
+{
+    s = line;
+    cmp = line;
+    auto rand = std::uniform_int_distribution<size_t>(0, 100);
+    for (size_t i = 0; i < 50; ++i) {
+        auto size = rand(mt);
+        s.resize(size);
+        cmp.resize(size);
+        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+    }
+}
+
+TEST_F(test_str, resize2)
+{
+    s = line;
+    cmp = line;
+    auto rand = std::uniform_int_distribution<size_t>(0, 100);
+    auto rand_alpha = std::uniform_int_distribution<char>('a', 'z');
+    for (size_t i = 0; i < 50; ++i) {
+        auto size = rand(mt);
+        auto c = rand_alpha(mt);
+        s.resize(size, c);
+        cmp.resize(size, c);
+        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+    }
+}
+
 TEST_F(test_str, remove_newline)
 {
     const auto* buf = "hello, world";

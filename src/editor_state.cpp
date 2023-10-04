@@ -29,7 +29,7 @@ editor_state::editor_state()
     winsize ws;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
         die("get_win_size");
-    m_screen_row = ws.ws_row;
+    m_screen_row = ws.ws_row - 2;
     m_screen_col = ws.ws_col;
 }
 
@@ -45,24 +45,27 @@ void editor_state::move_curor(int c)
             }
             break;
         case editor_key::RIGHT:
-            if (m_c_col < m_content[m_c_row].content().len())
-                ++m_c_col;
-            else if (m_c_row < m_content.size())
-                ++m_c_row, m_c_col = 0;
-            break;
-        case editor_key::DOWN:
-            if (m_c_row < m_content.size())
-                ++m_c_row; // FIXME pos exceeds the row len
+            if (m_c_row + 1 < m_content.size()) {
+                if (m_c_col + 1 < m_content[m_c_row].content().len())
+                    ++m_c_col;
+                else
+                    ++m_c_row, m_c_col = 0;
+            }
             break;
         case editor_key::UP:
             if (m_c_row)
                 --m_c_row;
             break;
+        case editor_key::DOWN:
+            if (m_c_row + 1 < m_content.size())
+                ++m_c_row; // FIXME
+            break;
         case editor_key::HOME:
             m_c_col = 0;
             break;
         case editor_key::END:
-            m_c_col = m_content[m_c_row].content().len();
+            if (m_c_row < m_content.size() && m_content[m_c_row].content().len())
+                m_c_col = m_content[m_c_row].content().len();
             break;
         case editor_key::DEL: // TODO
             break;

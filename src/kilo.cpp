@@ -12,6 +12,8 @@ void read_file(const char* filename)
     using namespace file;
 
     auto fp = file_raii(filename);
+    ed_state.filename() = filename;
+
     char* buf = nullptr;
     while ((buf = fp.nextline()) != nullptr || !fp.eof()) {
         auto line = str(std::move(buf)).remove_newline();

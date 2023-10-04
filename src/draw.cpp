@@ -1,8 +1,13 @@
+#include <algorithm>
+#include <bits/chrono.h>
+#include <chrono>
 #include <fmt/format.h>
+#include <functional>
 
 #include "draw.hpp"
 #include "keycode.hpp"
 #include "str.hpp"
+#include "logger.hpp"
 
 static constexpr const char* KILO_VERS = "0.0.1";
 
@@ -22,40 +27,72 @@ void print_welcome(editor_state& ed_state, str& buf)
     buf.append(msg.c_str());
 }
 
+void draw_status_msg_bar(editor_state& ed_state, str& buf)
+{
+    using std::chrono::time_point,
+          std::chrono::system_clock,
+          std::chrono::duration_cast,
+          std::chrono::seconds;
+
+    buf.append(esc_char::CLEAR_LINE);
+    const auto& status_msg = ed_state.status_msg();
+    if (status_msg.msg().len() &&
+            duration_cast<seconds>(system_clock::now()
+                - status_msg.timestamp()).count() < 5)
+        buf.append(status_msg.msg(), ed_state.screen_col());
+}
+
+void draw_statusbar(editor_state& ed_state, str& buf)
+{
+    buf.append(esc_char::INVERT_COLOR);
+
+    auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines",
+                            ed_state.filename().chars(),
+                            ed_state.content().size()).c_str());
+    auto line_info = str(fmt::format("{}:{}",
+                ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
+
+    file_info.resize(ed_state.screen_col() - line_info.len(), ' ');
+    buf.append(std::move(file_info));
+    buf.append(std::move(line_info));
+
+    buf.append(esc_char::RESET_COLOR);
+    buf.append(esc_char::NEWLINE);
+}
+
 void draw_rows(editor_state& ed_state, str& buf)
 {
+    const auto& content = ed_state.content();
     for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
-        const auto& lines = ed_state.content();
-
-        if (auto file_row = i + ed_state.rowoff(); file_row < lines.size()) {
-            const auto& printline = lines[file_row].render();
+        if (auto file_row = i + ed_state.rowoff(); file_row < content.size()) {
+            const auto& line = content[file_row].render();
             auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
-                    printline.len());
-            buf.append(printline.chars() + start_index, ed_state.screen_col());
-        } else if (!lines.size() && i == ed_state.screen_row() >> 1) {
+                    line.len());
+            buf.append(line.chars() + start_index, ed_state.screen_col());
+        } else if (!content.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
             buf.push_back('~');
         }
 
         buf.append(esc_char::CLEAR_LINE);
-        if (i < ed_state.screen_row() - 1)
-            buf.append("\r\n");
+        buf.append(esc_char::NEWLINE);
     }
 }
 
 void reset_cursor_pos(editor_state& ed_state, str& buf)
 {
     buf.append(fmt::format("\x1b[{:d};{:d}H",
-                ed_state.c_row() + 1, ed_state.r_col() + 1).c_str());
+                (ed_state.c_row() - ed_state.rowoff() + 1),
+                (ed_state.r_col() - ed_state.coloff() + 1)).c_str());
 }
 
 void scroll(editor_state& ed_state)
 {
-    auto& screen_row = ed_state.screen_row();
-    auto& screen_col = ed_state.screen_col();
-    auto& c_row = ed_state.c_row();
-    auto& c_col = ed_state.c_col();
+    const auto& screen_row = ed_state.screen_row();
+    const auto& screen_col = ed_state.screen_col();
+    const auto& c_row = ed_state.c_row();
+    const auto& c_col = ed_state.c_col();
     auto& r_col = ed_state.r_col();
     auto& rowoff = ed_state.rowoff();
     auto& coloff = ed_state.coloff();
@@ -82,6 +119,8 @@ void refresh_screen(editor_state& ed_state)
     buf.append(esc_char::HIDE_CURSOR);
     buf.append(esc_char::CLEAR_CURSOR_POS);
     draw_rows(ed_state, buf);
+    draw_statusbar(ed_state, buf);
+    draw_status_msg_bar(ed_state, buf);
     reset_cursor_pos(ed_state, buf);
     buf.append(esc_char::SHOW_CURSOR);
 

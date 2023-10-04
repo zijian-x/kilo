@@ -1,8 +1,9 @@
 #pragma once
 
-#include "file_raii.hpp"
 #include <fmt/core.h>
 #include <type_traits>
+
+#include "file_raii.hpp"
 
 template<typename T>
 static void log(const T& t)
