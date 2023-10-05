@@ -62,6 +62,10 @@ static constexpr int ctrl_key(int c)
 
 void process_key_press(editor_state& ed_state)
 {
+    auto& c_row = ed_state.c_row();
+    auto& c_col = ed_state.c_col();
+    const auto& contents = ed_state.content();
+
     auto c = read_key();
     switch (c) {
         case ctrl_key('q'):
@@ -69,25 +73,30 @@ void process_key_press(editor_state& ed_state)
             write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
             std::exit(0);
             break;
-        case editor_key::PAGE_UP:
-            ed_state.c_row() = ed_state.rowoff();
-            for (size_t i = ed_state.screen_row(); i > 0; --i)
-                ed_state.move_curor(editor_key::UP);
-            break;
-        case editor_key::PAGE_DOWN:
-            ed_state.c_row() = std::min(ed_state.content().size() - 1,
-                    ed_state.rowoff() + ed_state.screen_row() - 1);
-            for (size_t i = ed_state.screen_row(); i > 0; --i)
-                ed_state.move_curor(editor_key::DOWN);
-            break;
         case editor_key::UP:
         case editor_key::DOWN:
         case editor_key::RIGHT:
         case editor_key::LEFT:
-        case editor_key::HOME:
-        case editor_key::END:
-        case editor_key::DEL:
             ed_state.move_curor(c);
+            break;
+        case editor_key::PAGE_UP:
+            c_row = ed_state.rowoff();
+            for (size_t i = ed_state.screen_row(); i > 0; --i)
+                ed_state.move_curor(editor_key::UP);
+            break;
+        case editor_key::PAGE_DOWN:
+            c_row = std::min(contents.size() - 1,
+                    ed_state.rowoff() + ed_state.screen_row() - 1);
+            for (size_t i = ed_state.screen_row(); i > 0; --i)
+                ed_state.move_curor(editor_key::DOWN);
+            break;
+        case editor_key::HOME:
+            c_col = 0;
+            break;
+        case editor_key::END:
+            if (c_row < contents.size()
+                    && contents[c_row].content().len())
+                c_col = contents[c_row].content().len();
             break;
     }
 }

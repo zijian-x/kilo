@@ -58,16 +58,10 @@ void editor_state::move_curor(int c)
             break;
         case editor_key::DOWN:
             if (m_c_row + 1 < m_content.size())
-                ++m_c_row; // FIXME
-            break;
-        case editor_key::HOME:
-            m_c_col = 0;
-            break;
-        case editor_key::END:
-            if (m_c_row < m_content.size() && m_content[m_c_row].content().len())
-                m_c_col = m_content[m_c_row].content().len();
-            break;
-        case editor_key::DEL: // TODO
+                ++m_c_row;
             break;
     }
+
+    m_c_col = std::min(m_c_col,
+            m_c_row < m_content.size() ? m_content[m_c_row].content().len() : 0);
 }
