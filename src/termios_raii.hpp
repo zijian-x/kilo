@@ -27,8 +27,8 @@ public:
         raw.c_oflag &= ~(OPOST);
         raw.c_cflag |= (CS8);
         raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
-        raw.c_cc[VMIN] = 0;
-        raw.c_cc[VTIME] = 1;
+        raw.c_cc[VMIN] = 0; // TODO change to 1 maybe
+        raw.c_cc[VTIME] = 1; // TODO change to 0 maybe
 
         if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
             die("tcsetattr");

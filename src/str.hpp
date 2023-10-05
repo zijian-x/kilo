@@ -53,7 +53,7 @@ public:
     str& append(const str&,
             std::size_t count = std::numeric_limits<std::size_t>::max());
 
-    str& insert(std::size_t, std::size_t, char);
+    str& insert(std::size_t, std::size_t, int);
 
     str& insert(std::size_t, const str&);
 

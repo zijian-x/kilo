@@ -87,7 +87,7 @@ str& str::resize(std::size_t count, char c)
     return *this;
 }
 
-str& str::insert(std::size_t index, std::size_t count, char c)
+str& str::insert(std::size_t index, std::size_t count, int c)
 {
     if (!count) [[unlikely]]
         return *this;
@@ -104,7 +104,7 @@ str& str::insert(std::size_t index, std::size_t count, char c)
     auto n = m_len - index + 1;
     std::memmove(dest, src, n);
     for (size_t i = 0; i < count; ++i)
-        m_str[index + i] = c;
+        m_str[index + i] = static_cast<char>(c);
     m_len += count;
     return *this;
 }

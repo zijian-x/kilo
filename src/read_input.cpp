@@ -1,5 +1,6 @@
 #include "read_input.hpp"
 #include "die.hpp"
+#include "file_io.hpp"
 #include "keycode.hpp"
 
 static std::optional<int> read_arrow_key()
@@ -68,16 +69,25 @@ void process_key_press(editor_state& ed_state)
 
     auto c = read_key();
     switch (c) {
+        case '\r':
+            // TODO
+            break;
         case ctrl_key('q'):
             write(STDOUT_FILENO, esc_char::CLEAR_SCREEN, 4);
             write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
             std::exit(0);
             break;
-        case editor_key::UP:
-        case editor_key::DOWN:
-        case editor_key::RIGHT:
-        case editor_key::LEFT:
-            ed_state.move_curor(c);
+        case ctrl_key('s'):
+            file::save_file(ed_state);
+            break;
+        case editor_key::BACKSPACE:
+        case ctrl_key('h'):
+        case editor_key::DEL:
+            // TODO
+            break;
+        case ctrl_key('l'):
+        case '\x1b':
+            // ignore refresh key and escape key sequences
             break;
         case editor_key::PAGE_UP:
             c_row = ed_state.rowoff();
@@ -97,6 +107,15 @@ void process_key_press(editor_state& ed_state)
             if (c_row < contents.size()
                     && contents[c_row].content().len())
                 c_col = contents[c_row].content().len();
+            break;
+        case editor_key::UP:
+        case editor_key::DOWN:
+        case editor_key::RIGHT:
+        case editor_key::LEFT:
+            ed_state.move_curor(c);
+            break;
+        default:
+            ed_state.insert_char(c);
             break;
     }
 }

@@ -9,7 +9,8 @@
 #include "str.hpp"
 
 static constexpr unsigned short TABSTOP = 8;
-static constexpr const char* DEFAULT_MSG = "HELP: CTRL-Q = Quit";
+static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save | "
+                                           "CTRL-Q = Quit";
 
 class editor_row
 {
@@ -21,6 +22,7 @@ public:
     {
         m_row = std::forward<T>(t);
         m_render = m_row;
+
         render_row();
     }
 
@@ -31,6 +33,7 @@ public:
     { return this->m_render; }
 
     std::size_t c_col_to_r_col(std::size_t);
+    void insert_char(std::size_t, int);
 
 private:
     str m_row;
@@ -42,6 +45,11 @@ private:
 class status_message
 {
 public:
+    status_message() = default;
+
+    status_message(str msg)
+    { set_msg(std::move(msg)); }
+
     const str& msg() const
     { return this->m_msg; }
 
@@ -124,11 +132,16 @@ public:
     const status_message& status_msg() const
     { return this->m_status_msg; }
 
-    void move_curor(int c);
+    void move_curor(int);
+
+    void insert_char(int);
+
+    str rows_to_string() const;
 
 private:
 
-    str m_filename = "[No Name]";
+    str m_filename{};
+    bool dirty{};
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};

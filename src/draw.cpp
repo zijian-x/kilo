@@ -7,7 +7,6 @@
 #include "draw.hpp"
 #include "keycode.hpp"
 #include "str.hpp"
-#include "logger.hpp"
 
 static constexpr const char* KILO_VERS = "0.0.1";
 
@@ -38,7 +37,7 @@ void draw_status_msg_bar(editor_state& ed_state, str& buf)
     const auto& status_msg = ed_state.status_msg();
     if (status_msg.msg().len() &&
             duration_cast<seconds>(system_clock::now()
-                - status_msg.timestamp()).count() < 5)
+                - status_msg.timestamp()).count() < 2)
         buf.append(status_msg.msg(), ed_state.screen_col());
 }
 
@@ -47,8 +46,8 @@ void draw_statusbar(editor_state& ed_state, str& buf)
     buf.append(esc_char::INVERT_COLOR);
 
     auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines",
-                            ed_state.filename().chars(),
-                            ed_state.content().size()).c_str());
+                (ed_state.filename().len() ? ed_state.filename().chars() : "[No Name]"),
+                ed_state.content().size()).c_str());
     auto line_info = str(fmt::format("{}:{}",
                 ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
 

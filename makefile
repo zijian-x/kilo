@@ -34,6 +34,9 @@ test_obj := $(test_src:.cpp=.o)
 all: compile
 
 run: compile
+	./$(MAIN)
+
+run_file: compile
 	./$(MAIN) file
 
 print:

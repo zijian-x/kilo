@@ -18,6 +18,7 @@ namespace esc_char
 
 enum editor_key : int
 {
+    BACKSPACE = 127,
     UP = 1000,
     DOWN,
     LEFT,

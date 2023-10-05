@@ -24,6 +24,14 @@ std::size_t editor_row::c_col_to_r_col(size_t c_col)
     return r_col;
 }
 
+void editor_row::insert_char(size_t index, int c)
+{
+    m_row.insert(index, 1, c);
+    m_render.insert(index, 1, c);
+
+    render_row();
+}
+
 editor_state::editor_state()
 {
     winsize ws;
@@ -45,8 +53,8 @@ void editor_state::move_curor(int c)
             }
             break;
         case editor_key::RIGHT:
-            if (m_c_row + 1 < m_content.size()) {
-                if (m_c_col + 1 < m_content[m_c_row].content().len())
+            if (m_c_row < m_content.size()) {
+                if (m_c_col < m_content[m_c_row].content().len())
                     ++m_c_col;
                 else
                     ++m_c_row, m_c_col = 0;
@@ -57,11 +65,29 @@ void editor_state::move_curor(int c)
                 --m_c_row;
             break;
         case editor_key::DOWN:
-            if (m_c_row + 1 < m_content.size())
+            if (m_c_row < m_content.size())
                 ++m_c_row;
             break;
     }
 
     m_c_col = std::min(m_c_col,
             m_c_row < m_content.size() ? m_content[m_c_row].content().len() : 0);
+}
+
+void editor_state::insert_char(int c)
+{
+    if (m_c_row == m_content.size())
+        m_content.push_back(str());
+    m_content[m_c_row].insert_char(m_c_col++, c);
+}
+
+str editor_state::rows_to_string() const
+{
+    auto buf = str();
+    for (const auto& line : m_content) {
+        buf.append(line.content());
+        buf.push_back('\n');
+    }
+
+    return buf;
 }
