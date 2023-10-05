@@ -13,41 +13,6 @@ static constexpr unsigned short QUIT_TIMES = 1;
 static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save | "
                                            "CTRL-Q = Quit";
 
-class editor_row
-{
-public:
-    editor_row() = default;
-
-    template<typename T>
-    editor_row(T&& t)
-    {
-        m_row = std::forward<T>(t);
-        m_render = m_row;
-
-        render_row();
-    }
-
-    const str& content() const
-    { return this->m_row; }
-
-    const str& render() const
-    { return this->m_render; }
-
-    void append_str(const str&);
-
-    void insert_char(std::size_t, int);
-
-    void delete_char(std::size_t);
-
-    std::size_t c_col_to_r_col(std::size_t);
-
-private:
-    str m_row;
-    str m_render;
-
-    void render_row();
-};
-
 class status_message
 {
 public:
@@ -129,10 +94,10 @@ public:
     const std::size_t& coloff() const
     { return this->m_coloff; }
 
-    std::vector<editor_row>& content()
+    std::vector<str>& content()
     { return this->m_content; }
 
-    const std::vector<editor_row>& content() const
+    const std::vector<str>& content() const
     { return this->m_content; }
 
     status_message& status_msg()
@@ -142,6 +107,8 @@ public:
     { return this->m_status_msg; }
 
     void move_curor(int);
+
+    std::size_t c_col_to_r_col(const str& row, std::size_t);
 
     void insert_char(int);
 
@@ -156,7 +123,7 @@ private:
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<editor_row> m_content; // TODO replace vector with custom class
+    std::vector<str> m_content; // TODO replace vector with custom class
     status_message m_status_msg;
 };
 

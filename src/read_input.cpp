@@ -114,8 +114,8 @@ void process_key_press(editor_state& ed_state)
             break;
         case editor_key::END:
             if (c_row < contents.size()
-                    && contents[c_row].content().len())
-                c_col = contents[c_row].content().len();
+                    && contents[c_row].len())
+                c_col = contents[c_row].len();
             break;
         case editor_key::UP:
         case editor_key::DOWN:

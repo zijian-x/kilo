@@ -57,9 +57,17 @@ void swap(str& lhs, str& rhs)
 
 void str::push_back(char c)
 {
-    try_realloc_str(m_len + 1);
-    m_str[m_len++] = c;
+    this->append(1, c);
+}
+
+str& str::append(std::size_t count, char c)
+{
+    try_realloc_str(m_len + count);
+    std::memset(m_str + m_len, c, count);
+    m_len += count;
     m_str[m_len] = 0;
+
+    return *this;
 }
 
 str& str::append(const str& s, std::size_t n)

@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "draw.hpp"
+#include "editor_state.hpp"
 #include "keycode.hpp"
 #include "str.hpp"
 
@@ -61,16 +62,31 @@ void draw_statusbar(editor_state& ed_state, str& buf)
     buf.append(esc_char::NEWLINE);
 }
 
+str render_row(const str& row)
+{
+    auto render = str();
+
+    for (size_t i = 0; i < row.len(); ++i) {
+        if (row[i] == '\t')
+            render.append(TABSTOP, ' ');
+        else
+            render.push_back(row[i]);
+    }
+
+    return render;
+}
+
+
 void draw_rows(editor_state& ed_state, str& buf)
 {
-    const auto& content = ed_state.content();
+    const auto& contents = ed_state.content();
     for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
-        if (auto file_row = i + ed_state.rowoff(); file_row < content.size()) {
-            const auto& line = content[file_row].render();
+        if (auto file_row = i + ed_state.rowoff(); file_row < contents.size()) {
+            const auto render = render_row(contents[file_row]);
             auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
-                    line.len());
-            buf.append(line.chars() + start_index, ed_state.screen_col());
-        } else if (!content.size() && i == ed_state.screen_row() >> 1) {
+                    render.len());
+            buf.append(render.chars() + start_index, ed_state.screen_col());
+        } else if (!contents.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
             buf.push_back('~');
@@ -98,9 +114,10 @@ void scroll(editor_state& ed_state)
     auto& rowoff = ed_state.rowoff();
     auto& coloff = ed_state.coloff();
 
+    const auto& contents = ed_state.content();
     r_col = 0;
     if (c_row < ed_state.content().size())
-        r_col = ed_state.content()[c_row].c_col_to_r_col(c_col);
+        r_col = ed_state.c_col_to_r_col(contents[c_row], c_col);
 
     if (c_row < rowoff)
         rowoff = c_row;

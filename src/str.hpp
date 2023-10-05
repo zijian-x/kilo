@@ -33,6 +33,9 @@ public:
     const char* chars() const
     { return this->m_str; }
 
+    bool empty() const
+    { return this->m_len == 0; }
+
     std::size_t len() const
     { return this->m_len; }
 
@@ -49,6 +52,8 @@ public:
     { return const_cast<str&>(*this).back(); }
 
     void push_back(char);
+
+    str& append(std::size_t, char);
 
     str& append(const str&,
             std::size_t count = std::numeric_limits<std::size_t>::max());
@@ -71,9 +76,9 @@ public:
     // TODO iterators
 
 private:
-    char* m_str{nullptr};
+    char* m_str{new char[1]{}};
     std::size_t m_len{0};
-    std::size_t m_size{0};
+    std::size_t m_size{1};
 
     void try_realloc_str(std::size_t extra_len);
 };

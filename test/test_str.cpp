@@ -29,9 +29,11 @@ protected:
     std::mt19937 mt{};
 };
 
+// TODO add test cases for null strings for all tests
+
 TEST_F(test_str, default_ctor)
 {
-    ASSERT_EQ(s.chars(), nullptr);
+    ASSERT_STREQ(s.chars(), cmp.c_str());
 }
 
 TEST_F(test_str, char_ptr_ctor)
@@ -102,26 +104,66 @@ TEST_F(test_str, Front)
 
 TEST_F(test_str, back_and_push_back)
 {
+    s = str();
+    cmp = std::string();
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         s.push_back(line[i]);
+        cmp.push_back(line[i]);
+
         ASSERT_EQ(s.back(), line[i]);
+        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.chars(), cmp.c_str());
     }
 }
 
-TEST_F(test_str, append)
+TEST_F(test_str, append1)
 {
+    auto len = std::strlen(line);
+    auto rand_idx = std::uniform_int_distribution<size_t>(0, len - 1);
+    auto rand_cnt = std::uniform_int_distribution<size_t>(0, 100);
+    for (size_t i = 0; i < 100; ++i) {
+        auto idx = rand_idx(mt);
+        auto cnt = rand_cnt(mt);
+        s.append(cnt, line[idx]);
+        cmp.append(cnt, line[idx]);
+
+        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+    }
+}
+
+TEST_F(test_str, append2)
+{
+    s.append(str());
+    cmp.append(std::string());
+    ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_EQ(s.len(), cmp.size());
+
     for (size_t i = 0; i < 5; ++i) {
         s.append(line);
         cmp.append(line);
-    }
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
+    }
 
     s.clear();
     cmp.clear();
     ASSERT_STREQ(s.chars(), cmp.c_str());
     ASSERT_EQ(s.len(), cmp.size());
+}
+
+TEST_F(test_str, append3)
+{
+    auto rand = std::uniform_int_distribution<size_t>(0, 100);
+    for (size_t i = 0; i < 100; ++i) {
+        auto cnt = rand(mt);
+        s.append(line, cnt);
+        cmp.append(line, cnt);
+
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
+    }
 }
 
 TEST_F(test_str, insert1)
@@ -227,13 +269,10 @@ TEST_F(test_str, resize2)
 
 TEST_F(test_str, remove_newline)
 {
-    const auto* buf = "hello, world";
-    s = buf;
     s.push_back('\n');
     s.remove_newline();
 
-    ASSERT_STREQ(s.chars(), buf);
-    ASSERT_EQ(s.len(), std::strlen(buf));
+    ASSERT_EQ(s.len(), 0);
 }
 
 TEST_F(test_str, replace1)

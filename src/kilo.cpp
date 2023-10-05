@@ -11,9 +11,8 @@ int main(int argc, char** argv)
     static termios_raii t_ios;
     t_ios.enable_raw_mode();
 
-    if (argc >= 2) {
+    if (argc >= 2)
         file::read_file(ed_state, argv[1]);
-    }
 
     while (1) {
         refresh_screen(ed_state);
