@@ -9,6 +9,7 @@
 #include "str.hpp"
 
 static constexpr unsigned short TABSTOP = 8;
+static constexpr unsigned short QUIT_TIMES = 1;
 static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save | "
                                            "CTRL-Q = Quit";
 
@@ -32,8 +33,13 @@ public:
     const str& render() const
     { return this->m_render; }
 
-    std::size_t c_col_to_r_col(std::size_t);
+    void append_str(const str&);
+
     void insert_char(std::size_t, int);
+
+    void delete_char(std::size_t);
+
+    std::size_t c_col_to_r_col(std::size_t);
 
 private:
     str m_row;
@@ -77,6 +83,9 @@ public:
 
     const str& filename() const
     { return this->m_filename; }
+
+    bool dirty() const
+    { return this->m_dirty; }
 
     std::size_t& screen_row()
     { return this->m_screen_row; }
@@ -136,15 +145,19 @@ public:
 
     void insert_char(int);
 
+    void delete_char();
+
     str rows_to_string() const;
 
 private:
 
     str m_filename{};
-    bool dirty{};
+    std::size_t m_dirty{};
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<editor_row> m_content;
+    std::vector<editor_row> m_content; // TODO replace vector with custom class
     status_message m_status_msg;
 };
+
+void quit_editor();

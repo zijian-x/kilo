@@ -1,7 +1,9 @@
 #include "read_input.hpp"
 #include "die.hpp"
+#include "editor_state.hpp"
 #include "file_io.hpp"
 #include "keycode.hpp"
+#include <fmt/core.h>
 
 static std::optional<int> read_arrow_key()
 {
@@ -63,6 +65,7 @@ static constexpr int ctrl_key(int c)
 
 void process_key_press(editor_state& ed_state)
 {
+    static unsigned int quit_times = QUIT_TIMES;
     auto& c_row = ed_state.c_row();
     auto& c_col = ed_state.c_col();
     const auto& contents = ed_state.content();
@@ -73,9 +76,13 @@ void process_key_press(editor_state& ed_state)
             // TODO
             break;
         case ctrl_key('q'):
-            write(STDOUT_FILENO, esc_char::CLEAR_SCREEN, 4);
-            write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
-            std::exit(0);
+            if (ed_state.dirty() && quit_times) {
+                --quit_times;
+                ed_state.status_msg()
+                    .set_msg("Warning: file has unsaved changes, press again to quit");
+                return;
+            }
+            quit_editor();
             break;
         case ctrl_key('s'):
             file::save_file(ed_state);
@@ -83,7 +90,9 @@ void process_key_press(editor_state& ed_state)
         case editor_key::BACKSPACE:
         case ctrl_key('h'):
         case editor_key::DEL:
-            // TODO
+            if (c == editor_key::DEL)
+                ed_state.move_curor(editor_key::RIGHT);
+            ed_state.delete_char();
             break;
         case ctrl_key('l'):
         case '\x1b':
@@ -118,5 +127,7 @@ void process_key_press(editor_state& ed_state)
             ed_state.insert_char(c);
             break;
     }
+
+    quit_times = QUIT_TIMES;
 }
 

@@ -45,9 +45,11 @@ void draw_statusbar(editor_state& ed_state, str& buf)
 {
     buf.append(esc_char::INVERT_COLOR);
 
-    auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines",
-                (ed_state.filename().len() ? ed_state.filename().chars() : "[No Name]"),
-                ed_state.content().size()).c_str());
+    auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines{}",
+                (ed_state.filename().len() ?
+                 ed_state.filename().chars() : "[No Name]"),
+                ed_state.content().size(),
+                (ed_state.dirty() ? " [+]" : "")).c_str());
     auto line_info = str(fmt::format("{}:{}",
                 ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
 

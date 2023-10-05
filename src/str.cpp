@@ -225,3 +225,31 @@ str& str::replace(std::size_t index, std::size_t count,
 
     return *this;
 }
+
+str& str::erase(std::size_t index, std::size_t count)
+{
+    if (index > m_len)
+        die("erase index out of range");
+
+    if (count == std::numeric_limits<std::size_t>::max()
+            || index + count >= m_len) {
+        m_str[index] = 0;
+        m_len = index;
+        return *this;
+    }
+
+    // 0 1 2 3 4
+    // h e l l o
+    //              index = 1, count 2
+    //              dest = index = 1
+    //              src = index + count = 1 + 2 = 3
+    //              n = m_len - index - count = 5 - 1 - 2 = 2
+    auto* dest = m_str + index;
+    auto* src = m_str + index + count;
+    auto n = m_len - index - count;
+    std::memmove(dest, src, n);
+    m_len -= count;
+    m_str[m_len] = 0;
+
+    return *this;
+}

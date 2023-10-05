@@ -3,7 +3,6 @@
 #include "keycode.hpp"
 
 #include <sys/ioctl.h>
-#include <utility>
 
 void editor_row::render_row()
 {
@@ -24,10 +23,28 @@ std::size_t editor_row::c_col_to_r_col(size_t c_col)
     return r_col;
 }
 
+void editor_row::append_str(const str& line)
+{
+    m_row.append(line);
+    m_render.append(line);
+
+    render_row();
+}
+
 void editor_row::insert_char(size_t index, int c)
 {
     m_row.insert(index, 1, c);
     m_render.insert(index, 1, c);
+
+    render_row();
+}
+
+void editor_row::delete_char(size_t index)
+{
+    if (index >= m_row.len())
+        return;
+    m_row.erase(index, 1);
+    m_render.erase(index, 1);
 
     render_row();
 }
@@ -79,6 +96,28 @@ void editor_state::insert_char(int c)
     if (m_c_row == m_content.size())
         m_content.push_back(str());
     m_content[m_c_row].insert_char(m_c_col++, c);
+
+    ++m_dirty;
+}
+
+void editor_state::delete_char()
+{
+    if (m_c_row == m_content.size())
+        return;
+
+    auto& row = m_content[m_c_row];
+    if (m_c_col) {
+        row.delete_char(m_c_col - 1);
+        --m_c_col;
+        ++m_dirty;
+    } else if (m_c_row) {
+        auto& prev_row = m_content[m_c_row - 1];
+        m_c_col = prev_row.content().len();
+        prev_row.append_str(row.content());
+        m_content.erase(begin(m_content) + static_cast<long>(m_c_row));
+        --m_c_row;
+        ++m_dirty;
+    }
 }
 
 str editor_state::rows_to_string() const
@@ -90,4 +129,11 @@ str editor_state::rows_to_string() const
     }
 
     return buf;
+}
+
+void quit_editor()
+{
+    write(STDOUT_FILENO, esc_char::CLEAR_SCREEN, 4);
+    write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
+    std::exit(0);
 }

@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <cassert>
 #include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <cstring>
+#include <iterator>
 #include <random>
 #include <string>
 
@@ -339,7 +341,7 @@ TEST_F(test_str, replace6)
 
 TEST_F(test_str, replace7)
 {
-    auto cmp = std::string("hello\tworld\t\t!");
+    cmp = std::string("hello\tworld\t\t!");
     s = cmp.c_str();
 
     for (size_t i = 0; i < s.len(); ++i) {
@@ -351,4 +353,21 @@ TEST_F(test_str, replace7)
 
     ASSERT_STREQ(s.chars(), cmp.c_str());
     ASSERT_EQ(s.len(), cmp.size());
+}
+
+TEST_F(test_str, erase1)
+{
+    s = line;
+    cmp = line;
+
+    auto rand_erase_cnt = std::uniform_int_distribution<std::size_t>(0, 3);
+    while (cmp.size()) {
+        auto rand_idx = std::uniform_int_distribution<size_t>(0, cmp.size());
+        auto idx = rand_idx(mt);
+        auto cnt = rand_erase_cnt(mt);
+        s.erase(idx, cnt);
+        cmp.erase(idx, cnt);
+        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.len(), cmp.size());
+    }
 }

@@ -63,6 +63,9 @@ public:
 
     str& clear();
 
+    str& erase(std::size_t,
+            std::size_t count = std::numeric_limits<std::size_t>::max());
+
     str& remove_newline();
 
     // TODO iterators
