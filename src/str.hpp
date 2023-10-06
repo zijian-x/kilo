@@ -31,7 +31,7 @@ public:
     friend void swap(str&, str&);
 
     const char* chars() const
-    { return this->m_str; }
+    { return (m_str ? m_str : ""); }
 
     bool empty() const
     { return this->m_len == 0; }
@@ -76,7 +76,7 @@ public:
     // TODO iterators
 
 private:
-    char* m_str{new char[1]{}};
+    char* m_str{nullptr};
     std::size_t m_len{0};
     std::size_t m_size{1};
 

@@ -72,7 +72,7 @@ str& str::append(std::size_t count, char c)
 
 str& str::append(const str& s, std::size_t n)
 {
-    auto copy_len = std::min(std::strlen(s.chars()), n);
+    auto copy_len = std::min(s.len(), n);
     if (!copy_len) [[unlikely]]
         return *this;
 
