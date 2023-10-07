@@ -1,10 +1,10 @@
 #include "str.hpp"
-#include "die.hpp"
+
 #include <cctype>
 #include <cstddef>
 #include <cstring>
-#include <fmt/core.h>
 #include <limits>
+#include <stdexcept>
 
 str::str(const char* s)
 {
@@ -100,7 +100,7 @@ str& str::insert(std::size_t index, std::size_t count, int c)
     if (!count) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        die("insert index out of range");
+        std::out_of_range("accessing index beyond the underlying buffer size");
 
     try_realloc_str(m_size + count);
     // a b c d e f      idx = 2, count = 2 =>
@@ -122,7 +122,7 @@ str& str::insert(std::size_t index, const str& s)
     if (!s.m_size) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        die("insert index out of range");
+        std::out_of_range("erase index out of range");
 
     try_realloc_str(m_size + s.m_size);
     std::memmove(m_str + index + s.m_size, m_str + index, m_size - index + 1);
@@ -155,9 +155,6 @@ void str::try_realloc_str(std::size_t new_len)
 
     m_capacity = new_len + 1;
     auto* new_str = new char[m_capacity]{};
-    if (!new_str)
-        die("new[] alloc");
-
     if (m_str) {
         std::strcpy(new_str, m_str);
         delete[] m_str;
@@ -171,7 +168,7 @@ str& str::replace(std::size_t index, std::size_t count,
     if (!count || !count2) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        die("index out of bound");
+        std::out_of_range("accessing index beyond the underlying buffer size");
 
     if (count == count2) {
         auto new_len = index + count;
@@ -237,7 +234,7 @@ str& str::replace(std::size_t index, std::size_t count,
 str& str::erase(std::size_t index, std::size_t count)
 {
     if (index > m_size)
-        die("erase index out of range");
+        std::out_of_range("accessing index beyond the underlying buffer size");
 
     if (count == std::numeric_limits<std::size_t>::max()
             || index + count >= m_size) {

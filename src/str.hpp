@@ -213,12 +213,16 @@ public:
     str& erase(std::size_t,
             std::size_t count = std::numeric_limits<std::size_t>::max());
 
+    str& erase(iterator pos);
+
+    str& erase(iterator, iterator);
+
     str& remove_newline();
 
 private:
     char* m_str{nullptr};
     std::size_t m_size{0};
-    std::size_t m_capacity{1};
+    std::size_t m_capacity{0};
 
     void try_realloc_str(std::size_t extra_len);
 };

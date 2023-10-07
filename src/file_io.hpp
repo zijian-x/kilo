@@ -1,11 +1,11 @@
 #pragma once
 
+#include <stdexcept>
 #include <cstring>
 #include <stdio.h>
 
 #include "editor_state.hpp"
 #include "str.hpp"
-#include "die.hpp"
 
 namespace file
 {
@@ -20,7 +20,7 @@ namespace file
             this->m_filename = filename;
             this->m_fp = fopen(filename, mode);
             if (!m_fp)
-                die("fopen");
+                std::invalid_argument("file not found");
         }
 
         ~file_raii()

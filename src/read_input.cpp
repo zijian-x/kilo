@@ -1,9 +1,9 @@
 #include "read_input.hpp"
-#include "die.hpp"
 #include "editor_state.hpp"
 #include "file_io.hpp"
 #include "keycode.hpp"
 #include <fmt/core.h>
+#include <stdexcept>
 
 static std::optional<int> read_arrow_key()
 {
@@ -52,7 +52,7 @@ static int read_key()
     int c = '\0';
     while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
         if (nread == -1 && errno != EAGAIN)
-            die("read");
+            throw std::runtime_error("error on read()");
     }
 
     return c == '\x1b' ? read_arrow_key().value_or(c) : c;

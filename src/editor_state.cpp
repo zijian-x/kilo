@@ -1,14 +1,15 @@
 #include "editor_state.hpp"
-#include "die.hpp"
 #include "keycode.hpp"
 
+#include <stdexcept>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 editor_state::editor_state()
 {
     winsize ws;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
-        die("get_win_size");
+        throw std::runtime_error("ioctl error");
     m_screen_row = ws.ws_row - 2;
     m_screen_col = ws.ws_col;
 }

@@ -198,8 +198,9 @@ TEST_F(str_iter_test, stl_sort_greater)
 TEST_F(str_iter_test, stl_copy)
 {
     auto buf = str();
-    buf.resize(s.size());
     auto cmp_buf = std::string();
+
+    buf.resize(s.size());
     cmp_buf.resize(cmp.size());
 
     std::copy(begin(s), end(s), begin(buf));
