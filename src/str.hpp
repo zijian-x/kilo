@@ -9,7 +9,6 @@
 class str
 {
 public:
-
     class iterator
     {
     public:
@@ -138,7 +137,7 @@ public:
         pointer m_ptr;
     };
 
-    // TODO reverse iterator
+    // TODO reverse & const iterator
 
     str() = default;
 
@@ -150,21 +149,20 @@ public:
 
     str(str&&);
 
-    ~str()
-    { delete[] m_str; }
+    ~str();
 
     str& operator=(str);
 
     char& operator[](std::size_t i)
-    { return m_str[i]; }
+    { return bptr[i]; }
 
     const char& operator[](std::size_t i) const
-    { return m_str[i]; }
+    { return bptr[i]; }
 
     friend void swap(str&, str&);
 
     const char* c_str() const
-    { return (m_str ? m_str : ""); }
+    { return bptr; }
 
     bool empty() const
     { return this->m_size == 0; }
@@ -176,22 +174,22 @@ public:
     { return this->m_capacity; }
 
     char& front()
-    { return m_str[0]; }
+    { return bptr[0]; }
 
     char& front() const
     { return const_cast<str&>(*this).front(); }
 
     char& back()
-    { return m_str[m_size - 1]; }
+    { return bptr[m_size - 1]; }
 
     char& back() const
     { return const_cast<str&>(*this).back(); }
 
     iterator begin()
-    { return iterator(&m_str[0]); }
+    { return iterator(&bptr[0]); }
 
     iterator end()
-    { return iterator(&m_str[m_size]); }
+    { return iterator(&bptr[m_size]); }
 
     void push_back(char);
 
@@ -220,9 +218,15 @@ public:
     str& remove_newline();
 
 private:
-    char* m_str{nullptr};
+    static constexpr unsigned int SBO_SIZE = 15;
+    std::size_t m_capacity{SBO_SIZE};
     std::size_t m_size{0};
-    std::size_t m_capacity{0};
+    union {
+        char smb[15]{};
+        char* dynb;
+    };
+    bool sbo{true};
+    char* bptr{smb};
 
-    void try_realloc_str(std::size_t extra_len);
+    void ensure_capacity(std::size_t extra_len);
 };

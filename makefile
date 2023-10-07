@@ -26,7 +26,9 @@ TEST_ARGUMENTS := --gtest_filter=*
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
 
-test_src := $(shell find $(TEST_DIR) $(SRC_DIR) -type f -name "*.cpp" -and -not -name $(NAME).cpp)
+test_header := $(shell grep -roh '\.\./src/.*\.hpp' test | sort | uniq | sed 's;\.\./;;')
+test_src := $(shell find $(TEST_DIR) -type f -name "*.cpp") \
+	    $(test_header:.hpp=.cpp)
 test_obj := $(test_src:.cpp=.o)
 
 .PHONY: all run init debug compile test clean clean_test fclean leak generate_cc
@@ -38,9 +40,6 @@ run: compile
 
 run_file: compile
 	./$(MAIN) file
-
-print:
-	@echo $(test_src)
 
 debug: CXXFLAGS += -g
 
