@@ -36,7 +36,7 @@ void draw_status_msg_bar(editor_state& ed_state, str& buf)
 
     buf.append(esc_char::CLEAR_LINE);
     const auto& status_msg = ed_state.status_msg();
-    if (status_msg.msg().len() &&
+    if (status_msg.msg().size() &&
             duration_cast<seconds>(system_clock::now()
                 - status_msg.timestamp()).count() < 2)
         buf.append(status_msg.msg(), ed_state.screen_col());
@@ -47,14 +47,14 @@ void draw_statusbar(editor_state& ed_state, str& buf)
     buf.append(esc_char::INVERT_COLOR);
 
     auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines{}",
-                (ed_state.filename().len() ?
-                 ed_state.filename().chars() : "[No Name]"),
+                (ed_state.filename().size() ?
+                 ed_state.filename().c_str() : "[No Name]"),
                 ed_state.content().size(),
                 (ed_state.dirty() ? " [+]" : "")).c_str());
     auto line_info = str(fmt::format("{}:{}",
                 ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
 
-    file_info.resize(ed_state.screen_col() - line_info.len(), ' ');
+    file_info.resize(ed_state.screen_col() - line_info.size(), ' ');
     buf.append(std::move(file_info));
     buf.append(std::move(line_info));
 
@@ -66,7 +66,7 @@ str render_row(const str& row)
 {
     auto render = str();
 
-    for (size_t i = 0; i < row.len(); ++i) {
+    for (size_t i = 0; i < row.size(); ++i) {
         if (row[i] == '\t')
             render.append(TABSTOP, ' ');
         else
@@ -84,8 +84,8 @@ void draw_rows(editor_state& ed_state, str& buf)
         if (auto file_row = i + ed_state.rowoff(); file_row < contents.size()) {
             const auto render = render_row(contents[file_row]);
             auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
-                    render.len());
-            buf.append(render.chars() + start_index, ed_state.screen_col());
+                    render.size());
+            buf.append(render.c_str() + start_index, ed_state.screen_col());
         } else if (!contents.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
@@ -142,5 +142,5 @@ void refresh_screen(editor_state& ed_state)
     reset_cursor_pos(ed_state, buf);
     buf.append(esc_char::SHOW_CURSOR);
 
-    write(STDOUT_FILENO, buf.chars(), buf.len());
+    write(STDOUT_FILENO, buf.c_str(), buf.size());
 }

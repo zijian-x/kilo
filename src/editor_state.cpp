@@ -21,12 +21,12 @@ void editor_state::move_curor(int c)
                 --m_c_col;
             } else if (m_c_row > 0) {
                 --m_c_row;
-                m_c_col = m_content[m_c_row].len();
+                m_c_col = m_content[m_c_row].size();
             }
             break;
         case editor_key::RIGHT:
             if (m_c_row < m_content.size()) {
-                if (m_c_col < m_content[m_c_row].len())
+                if (m_c_col < m_content[m_c_row].size())
                     ++m_c_col;
                 else
                     ++m_c_row, m_c_col = 0;
@@ -43,7 +43,7 @@ void editor_state::move_curor(int c)
     }
 
     m_c_col = std::min(m_c_col,
-            m_c_row < m_content.size() ? m_content[m_c_row].len() : 0);
+            m_c_row < m_content.size() ? m_content[m_c_row].size() : 0);
 }
 
 std::size_t editor_state::c_col_to_r_col(const str& row, size_t c_col)
@@ -78,7 +78,7 @@ void editor_state::delete_char()
         ++m_dirty;
     } else if (m_c_row) {
         auto& prev_row = m_content[m_c_row - 1];
-        m_c_col = prev_row.len();
+        m_c_col = prev_row.size();
         prev_row.append(current_row);
         m_content.erase(begin(m_content) + static_cast<long>(m_c_row));
         --m_c_row;

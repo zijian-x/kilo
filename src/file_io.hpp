@@ -51,7 +51,7 @@ namespace file
 
         void write_line(const str& line)
         {
-            fwrite(line.chars(), sizeof(char), line.len(), m_fp);
+            fwrite(line.c_str(), sizeof(char), line.size(), m_fp);
             if (line.back() != '\r' || line.back() != '\n')
                 fwrite("\n", sizeof(char), 1, m_fp);
         }

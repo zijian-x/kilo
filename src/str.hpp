@@ -163,14 +163,17 @@ public:
 
     friend void swap(str&, str&);
 
-    const char* chars() const
+    const char* c_str() const
     { return (m_str ? m_str : ""); }
 
     bool empty() const
-    { return this->m_len == 0; }
+    { return this->m_size == 0; }
 
-    std::size_t len() const
-    { return this->m_len; }
+    std::size_t size() const
+    { return this->m_size; }
+
+    std::size_t capacity() const
+    { return this->m_capacity; }
 
     char& front()
     { return m_str[0]; }
@@ -179,7 +182,7 @@ public:
     { return const_cast<str&>(*this).front(); }
 
     char& back()
-    { return m_str[m_len - 1]; }
+    { return m_str[m_size - 1]; }
 
     char& back() const
     { return const_cast<str&>(*this).back(); }
@@ -188,7 +191,7 @@ public:
     { return iterator(&m_str[0]); }
 
     iterator end()
-    { return iterator(&m_str[m_len]); }
+    { return iterator(&m_str[m_size]); }
 
     void push_back(char);
 
@@ -212,12 +215,10 @@ public:
 
     str& remove_newline();
 
-    // TODO iterators
-
 private:
     char* m_str{nullptr};
-    std::size_t m_len{0};
-    std::size_t m_size{1};
+    std::size_t m_size{0};
+    std::size_t m_capacity{1};
 
     void try_realloc_str(std::size_t extra_len);
 };

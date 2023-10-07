@@ -29,19 +29,17 @@ protected:
     std::mt19937 mt{};
 };
 
-// TODO add test cases for null strings for all tests
-
 TEST_F(test_str, default_ctor)
 {
-    ASSERT_STREQ(s.chars(), cmp.c_str());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
 }
 
 TEST_F(test_str, char_ptr_ctor)
 {
     auto s = str(line);
-    ASSERT_STREQ(s.chars(), line);
-    ASSERT_NE(s.chars(), line);
-    ASSERT_EQ(s.len(), std::strlen(line));
+    ASSERT_STREQ(s.c_str(), line);
+    ASSERT_NE(s.c_str(), line);
+    ASSERT_EQ(s.size(), std::strlen(line));
 }
 
 TEST_F(test_str, moved_char_ptr_ctor)
@@ -52,8 +50,8 @@ TEST_F(test_str, moved_char_ptr_ctor)
 
     auto s = str(std::move(ptr));
 
-    ASSERT_EQ(reinterpret_cast<intptr_t>(s.chars()), addr);
-    ASSERT_STREQ(s.chars(), line);
+    ASSERT_EQ(reinterpret_cast<intptr_t>(s.c_str()), addr);
+    ASSERT_STREQ(s.c_str(), line);
 }
 
 TEST_F(test_str, copy_ctor)
@@ -62,22 +60,22 @@ TEST_F(test_str, copy_ctor)
     auto s2 = str(line);
     s1 = s2;
 
-    ASSERT_STREQ(s1.chars(), s2.chars());
-    ASSERT_EQ(s1.len(), s2.len());
-    ASSERT_NE(s1.chars(), s2.chars());
+    ASSERT_STREQ(s1.c_str(), s2.c_str());
+    ASSERT_EQ(s1.size(), s2.size());
+    ASSERT_NE(s1.c_str(), s2.c_str());
 }
 
 TEST_F(test_str, move_ctor)
 {
     auto s1 = str();
     auto s2 = str(line);
-    auto addr = reinterpret_cast<intptr_t>(s2.chars());
+    auto addr = reinterpret_cast<intptr_t>(s2.c_str());
 
     s1 = std::move(s2);
 
-    ASSERT_EQ(addr, reinterpret_cast<intptr_t>(s1.chars()));
-    ASSERT_STREQ(s1.chars(), line);
-    ASSERT_EQ(s1.len(), std::strlen(line));
+    ASSERT_EQ(addr, reinterpret_cast<intptr_t>(s1.c_str()));
+    ASSERT_STREQ(s1.c_str(), line);
+    ASSERT_EQ(s1.size(), std::strlen(line));
 }
 
 TEST_F(test_str, opertor_equal)
@@ -85,9 +83,9 @@ TEST_F(test_str, opertor_equal)
     auto tmp = str(line);
     s = tmp;
 
-    ASSERT_STREQ(s.chars(), tmp.chars());
-    ASSERT_NE(s.chars(), tmp.chars());
-    ASSERT_EQ(s.len(), tmp.len());
+    ASSERT_STREQ(s.c_str(), tmp.c_str());
+    ASSERT_NE(s.c_str(), tmp.c_str());
+    ASSERT_EQ(s.size(), tmp.size());
 }
 
 TEST_F(test_str, operator_equal_move)
@@ -111,8 +109,8 @@ TEST_F(test_str, back_and_push_back)
         cmp.push_back(line[i]);
 
         ASSERT_EQ(s.back(), line[i]);
-        ASSERT_EQ(s.len(), cmp.size());
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 }
 
@@ -127,8 +125,8 @@ TEST_F(test_str, append1)
         s.append(cnt, line[idx]);
         cmp.append(cnt, line[idx]);
 
-        ASSERT_EQ(s.len(), cmp.size());
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 }
 
@@ -136,21 +134,21 @@ TEST_F(test_str, append2)
 {
     s.append(str());
     cmp.append(std::string());
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 
     for (size_t i = 0; i < 5; ++i) {
         s.append(line);
         cmp.append(line);
 
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 
     s.clear();
     cmp.clear();
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, append3)
@@ -161,8 +159,8 @@ TEST_F(test_str, append3)
         s.append(line, cnt);
         cmp.append(line, cnt);
 
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 }
 
@@ -173,13 +171,13 @@ TEST_F(test_str, insert1)
         cmp.insert(i, 1, line[i]);
     }
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 
     s.clear();
     cmp.clear();
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, insert2)
@@ -208,13 +206,13 @@ TEST_F(test_str, insert2)
 
         s.insert(insert_idx, cnt, line[line_idx]);
         cmp.insert(insert_idx, cnt, line[line_idx]);
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 
     s.clear();
     cmp.clear();
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, insert_str)
@@ -226,15 +224,15 @@ TEST_F(test_str, insert_str)
         auto insert_idx = insert_idx_range(mt);
 
         s.insert(insert_idx, line);
-        cmp.insert(insert_idx, line.chars());
+        cmp.insert(insert_idx, line.c_str());
 
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 
     s.clear();
     cmp.clear();
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, resize1)
@@ -246,8 +244,8 @@ TEST_F(test_str, resize1)
         auto size = rand(mt);
         s.resize(size);
         cmp.resize(size);
-        ASSERT_EQ(s.len(), cmp.size());
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 }
 
@@ -262,8 +260,8 @@ TEST_F(test_str, resize2)
         auto c = rand_alpha(mt);
         s.resize(size, c);
         cmp.resize(size, c);
-        ASSERT_EQ(s.len(), cmp.size());
-        ASSERT_STREQ(s.chars(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
     }
 }
 
@@ -272,7 +270,7 @@ TEST_F(test_str, remove_newline)
     s.push_back('\n');
     s.remove_newline();
 
-    ASSERT_EQ(s.len(), 0);
+    ASSERT_EQ(s.size(), 0);
 }
 
 TEST_F(test_str, replace1)
@@ -292,28 +290,28 @@ TEST_F(test_str, replace1)
 
     s = str(line);
     cmp = std::string(line);
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_EQ(s.size(), cmp.size());
 
     auto dis = std::uniform_int_distribution<size_t>{1, 10};
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         auto cnt = dis(mt);
         s.replace(i, cnt, cnt, 'c');
         cmp.replace(i, cnt, cnt, 'c');
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 }
 
 TEST_F(test_str, replace2)
 {
     s = line;
-    cmp = std::string(s.chars());
+    cmp = std::string(s.c_str());
 
     s.replace(2, 2, 4, 'b');
     cmp.replace(2, 2, 4, 'b');
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, replace3)
@@ -330,21 +328,21 @@ TEST_F(test_str, replace3)
 
         s.replace(i, cnt, cnt + extra, c);
         cmp.replace(i, cnt, cnt + extra, c);
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 }
 
 TEST_F(test_str, replace4)
 {
     s = line;
-    cmp = std::string(s.chars());
+    cmp = std::string(s.c_str());
 
     s.replace(5, 4, 2, 'b');
     cmp.replace(5, 4, 2, 'b');
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, replace5)
@@ -355,8 +353,8 @@ TEST_F(test_str, replace5)
     s.replace(3, 10, 8, 'b');
     cmp.replace(3, 10, 8, 'b');
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, replace6)
@@ -373,8 +371,8 @@ TEST_F(test_str, replace6)
 
         s.replace(i, cnt + extra, cnt, c);
         cmp.replace(i, cnt + extra, cnt, c);
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 }
 
@@ -383,15 +381,15 @@ TEST_F(test_str, replace7)
     cmp = std::string("hello\tworld\t\t!");
     s = cmp.c_str();
 
-    for (size_t i = 0; i < s.len(); ++i) {
+    for (size_t i = 0; i < s.size(); ++i) {
         if (s[i] == '\t')
             s.replace(i, 1, 8, ' ');
         if (cmp[i] == '\t')
             cmp.replace(i, 1, 8, ' ');
     }
 
-    ASSERT_STREQ(s.chars(), cmp.c_str());
-    ASSERT_EQ(s.len(), cmp.size());
+    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_EQ(s.size(), cmp.size());
 }
 
 TEST_F(test_str, erase1)
@@ -406,7 +404,7 @@ TEST_F(test_str, erase1)
         auto cnt = rand_erase_cnt(mt);
         s.erase(idx, cnt);
         cmp.erase(idx, cnt);
-        ASSERT_STREQ(s.chars(), cmp.c_str());
-        ASSERT_EQ(s.len(), cmp.size());
+        ASSERT_STREQ(s.c_str(), cmp.c_str());
+        ASSERT_EQ(s.size(), cmp.size());
     }
 }
