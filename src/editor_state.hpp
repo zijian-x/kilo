@@ -49,7 +49,10 @@ public:
     const str& filename() const
     { return this->m_filename; }
 
-    bool dirty() const
+    std::size_t& dirty()
+    { return this->m_dirty; }
+
+    const std::size_t& dirty() const
     { return this->m_dirty; }
 
     std::size_t& screen_row()

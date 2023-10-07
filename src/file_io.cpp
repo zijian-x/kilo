@@ -30,10 +30,10 @@ namespace file
             write(fd, buf.c_str(), buf.size());
             ed_state.status_msg().set_msg(
                     fmt::format("{} bytes written to disk", buf.size()).c_str());
+            ed_state.dirty() = 0;
         } else {
             ed_state.status_msg().set_msg(
                     fmt::format("Can't save! I/O error: {}", std::strerror(errno)).c_str());
-
         }
 
         close(fd);
