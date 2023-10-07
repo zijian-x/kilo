@@ -36,6 +36,12 @@ public:
         const_pointer operator->() const
         { return m_ptr; }
 
+        reference operator[](std::size_t i)
+        { return m_ptr[i]; }
+
+        const_reference operator[](std::size_t i) const
+        { return m_ptr[i]; }
+
         iterator& operator++()
         {
             ++m_ptr;
@@ -62,30 +68,39 @@ public:
             return tmp;
         }
 
-        iterator operator+(difference_type diff)
-        {
-            auto tmp = *this;
-            tmp += diff;
-            return tmp;
-        }
-
         iterator& operator+=(difference_type diff)
         {
             m_ptr += diff;
             return *this;
         }
 
-        iterator operator-(difference_type diff)
-        {
-            auto tmp = *this;
-            tmp -= diff;
-            return tmp;
-        }
-
         iterator& operator-=(difference_type diff)
         {
             m_ptr -= diff;
             return *this;
+        }
+
+        friend iterator operator+(iterator lhs, difference_type diff)
+        {
+            lhs += diff;
+            return lhs;
+        }
+
+        friend iterator operator+(difference_type diff, iterator rhs)
+        {
+            rhs += diff;
+            return rhs;
+        }
+
+        friend iterator operator-(iterator lhs, difference_type diff)
+        {
+            lhs -= diff;
+            return lhs;
+        }
+
+        friend difference_type operator-(const iterator& lhs, const iterator& rhs)
+        {
+            return lhs.m_ptr - rhs.m_ptr;
         }
 
         friend bool operator==(const iterator& lhs, const iterator& rhs)
