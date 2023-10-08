@@ -98,46 +98,148 @@ public:
         }
 
         friend difference_type operator-(const iterator& lhs, const iterator& rhs)
-        {
-            return lhs.m_ptr - rhs.m_ptr;
-        }
+        { return lhs.m_ptr - rhs.m_ptr; }
 
         friend bool operator==(const iterator& lhs, const iterator& rhs)
-        {
-            return lhs.m_ptr == rhs.m_ptr;
-        }
+        { return lhs.m_ptr == rhs.m_ptr; }
 
         friend bool operator<(const iterator& lhs, const iterator& rhs)
-        {
-            return lhs.m_ptr < rhs.m_ptr;
-        }
+        { return lhs.m_ptr < rhs.m_ptr; }
 
         friend bool operator!=(const iterator& lhs, const iterator& rhs)
-        {
-            return !(lhs == rhs);
-        }
+        { return !(lhs == rhs); }
 
 
         friend bool operator<=(const iterator& lhs, const iterator& rhs)
-        {
-            return lhs == rhs || lhs < rhs;
-        }
+        { return lhs == rhs || lhs < rhs; }
 
         friend bool operator>(const iterator& lhs, const iterator& rhs)
-        {
-            return !(lhs <= rhs);
-        }
+        { return !(lhs <= rhs); }
 
         friend bool operator>=(const iterator& lhs, const iterator& rhs)
-        {
-            return !(lhs < rhs);
-        }
+        { return !(lhs < rhs); }
 
     private:
         pointer m_ptr;
     };
 
-    // TODO reverse & const iterator
+    class const_iterator
+    {
+    public:
+        const_iterator(iterator::pointer ptr) : m_iter{ptr}
+        {}
+
+        const_iterator(iterator iter) : m_iter{iter}
+        {}
+
+        iterator::const_reference operator*()
+        { return *m_iter; }
+
+        iterator::const_reference operator*() const
+        { return *m_iter; }
+
+        iterator::const_pointer operator->()
+        { return m_iter.operator->(); }
+
+        iterator::const_pointer operator->() const
+        { return m_iter.operator->(); }
+
+        iterator::const_reference operator[](std::size_t i)
+        { return m_iter[i]; }
+
+        iterator::const_reference operator[](std::size_t i) const
+        { return m_iter[i]; }
+
+        const_iterator& operator++()
+        {
+            ++m_iter;
+            return *this;
+        }
+
+        const_iterator operator++(int)
+        {
+            auto tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        const_iterator& operator--()
+        {
+            --m_iter;
+            return *this;
+        }
+
+        const_iterator operator--(int)
+        {
+            auto tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        const_iterator& operator+=(iterator::difference_type diff)
+        {
+            m_iter += diff;
+            return *this;
+        }
+
+        const_iterator& operator-=(iterator::difference_type diff)
+        {
+            m_iter -= diff;
+            return *this;
+        }
+
+        friend const_iterator operator+(const_iterator lhs,
+                iterator::difference_type diff)
+        {
+            lhs += diff;
+            return lhs;
+        }
+
+        friend const_iterator operator+(iterator::difference_type diff,
+                const_iterator rhs)
+        {
+            rhs += diff;
+            return rhs;
+        }
+
+        friend const_iterator operator-(const_iterator lhs,
+                iterator::difference_type diff)
+        {
+            lhs -= diff;
+            return lhs;
+        }
+
+        friend iterator::difference_type operator-(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return lhs.m_iter - rhs.m_iter; }
+
+        friend bool operator==(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return lhs.m_iter == rhs.m_iter; }
+
+        friend bool operator<(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return lhs.m_iter < rhs.m_iter; }
+
+        friend bool operator!=(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return !(lhs == rhs); }
+
+        friend bool operator<=(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return lhs == rhs || lhs < rhs; }
+
+        friend bool operator>(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return !(lhs <= rhs); }
+
+        friend bool operator>=(const const_iterator& lhs,
+                const const_iterator& rhs)
+        { return !(lhs < rhs); }
+
+    private:
+        iterator m_iter;
+    };
 
     str() = default;
 
@@ -191,6 +293,18 @@ public:
     iterator end()
     { return iterator(&bptr[m_size]); }
 
+    const_iterator begin() const
+    { return const_iterator(&bptr[0]); }
+
+    const_iterator end() const
+    { return const_iterator(&bptr[m_size]); }
+
+    const_iterator cbegin() const
+    { return const_iterator(&bptr[0]); }
+
+    const_iterator cend() const
+    { return const_iterator(&bptr[0]); }
+
     void push_back(char);
 
     str& append(std::size_t, char);
@@ -211,9 +325,9 @@ public:
     str& erase(std::size_t,
             std::size_t count = std::numeric_limits<std::size_t>::max());
 
-    str& erase(iterator pos);
+    str& erase(const_iterator pos);
 
-    str& erase(iterator, iterator);
+    str& erase(const_iterator, const_iterator);
 
     str& remove_newline();
 
