@@ -1,13 +1,17 @@
 #include "read_input.hpp"
+#include "draw.hpp"
 #include "editor_state.hpp"
 #include "file_io.hpp"
 #include "keycode.hpp"
 #include <fmt/core.h>
 #include <stdexcept>
 
+static constexpr int ctrl_key(int c)
+{ return c & 0x1f; }
+
 static std::optional<int> read_arrow_key()
 {
-    char seq[3]{}; // will need size of 3 in da future
+    char seq[3]{};
     if (read(STDIN_FILENO, &seq[0], 1) != 1)
         return {};
     if (read(STDIN_FILENO, &seq[1], 1) != 1)
@@ -58,9 +62,33 @@ static int read_key()
     return c == '\x1b' ? read_arrow_key().value_or(c) : c;
 }
 
-static constexpr int ctrl_key(int c)
+str prompt_input(editor_state& ed_state, const str& prompt)
 {
-    return c & 0x1f;
+    auto input = str();
+
+    for (;;) {
+        ed_state.status_msg().set_msg(prompt);
+        refresh_screen(ed_state);
+
+        int c = read_key();
+        if (c == editor_key::DEL
+                || c == ctrl_key('h')
+                || c == editor_key::BACKSPACE) {
+            if (!input.empty())
+                input.pop_back();
+        } else if (c == '\x1b') {
+            ed_state.status_msg().clear();
+            input.clear();
+            return input;
+        } else if (c == '\r') {
+            // TODO maybe return even if nothing is put in
+            if (!input.empty()) {
+                ed_state.status_msg().clear();
+                return input;
+            }
+        } else if (!iscntrl('c'))
+            input.push_back(static_cast<char>(c));
+    }
 }
 
 void process_key_press(editor_state& ed_state)
@@ -79,7 +107,7 @@ void process_key_press(editor_state& ed_state)
             if (ed_state.dirty() && quit_times) {
                 --quit_times;
                 ed_state.status_msg()
-                    .set_msg("Warning: file has unsaved changes, press again to quit");
+                    .set_msg("File has unsaved changes, press again to quit");
                 return;
             }
             quit_editor();

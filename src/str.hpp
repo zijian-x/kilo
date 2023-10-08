@@ -97,6 +97,8 @@ public:
 
     void push_back(char);
 
+    void pop_back();
+
     str& append(std::size_t, char);
 
     str& append(const str&,

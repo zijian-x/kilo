@@ -290,6 +290,35 @@ TEST_F(str_test, back_and_push_back)
     }
 }
 
+TEST_F(str_test, pop_back)
+{
+    auto generate_random_string = [](size_t size) {
+        auto rand_c = std::uniform_int_distribution<char>('!', '~');
+        auto mt = std::mt19937{};
+        auto string = std::string();
+        string.reserve(size);
+        for (size_t i = 0; i < size; ++i)
+            string.push_back(rand_c(mt));
+
+        return string;
+    };
+
+    auto rand_size = std::uniform_int_distribution<size_t>(0, 50);
+    for (auto i = 0; i < 100; ++i) {
+        stls = generate_random_string(rand_size(mt));
+        auto s1 = str(stls.c_str());
+
+        while (!s1.empty()) {
+            stls.pop_back();
+            s1.pop_back();
+            ASSERT_STREQ(s1.c_str(), stls.c_str());
+            ASSERT_EQ(s1.size(), stls.size());
+        }
+        ASSERT_STREQ(s1.c_str(), stls.c_str());
+        ASSERT_EQ(s1.size(), stls.size());
+    }
+}
+
 TEST_F(str_test, append1)
 {
     auto len = std::strlen(line);

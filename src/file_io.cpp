@@ -5,6 +5,7 @@
 
 #include "file_io.hpp"
 #include "editor_state.hpp"
+#include "read_input.hpp"
 
 namespace file
 {
@@ -19,8 +20,13 @@ namespace file
 
     void save_file(editor_state& ed_state)
     {
-        if (!ed_state.filename().size())
-            return;
+        if (ed_state.filename().empty()) {
+            ed_state.filename() = prompt_input(ed_state, "Save as: ");
+            if (ed_state.filename().empty()) {
+                ed_state.status_msg().set_msg("Saving aborted");
+                return;
+            }
+        }
 
         const auto& buf = ed_state.rows_to_string();
 

@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     if (argc >= 2)
         file::read_file(ed_state, argv[1]);
 
-    while (1) {
+    for (;;) {
         refresh_screen(ed_state);
         process_key_press(ed_state);
     }

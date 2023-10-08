@@ -33,6 +33,12 @@ public:
         this->m_timestamp = std::chrono::system_clock::now();
     }
 
+    void clear()
+    {
+        this->m_msg.clear();
+        this->m_timestamp = std::chrono::system_clock::now();
+    }
+
 private:
     str m_msg = DEFAULT_MSG;
     std::chrono::time_point<std::chrono::system_clock> m_timestamp = std::chrono::system_clock::now(); // wtf man..., i just want to get the time

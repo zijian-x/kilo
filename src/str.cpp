@@ -83,9 +83,10 @@ void swap(str& lhs, str& rhs)
 }
 
 void str::push_back(char c)
-{
-    this->append(1, c);
-}
+{ this->append(1, c); }
+
+void str::pop_back()
+{ bptr[--m_size] = 0; }
 
 str& str::append(std::size_t count, char c)
 {
