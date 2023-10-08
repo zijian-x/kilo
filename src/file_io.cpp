@@ -24,7 +24,8 @@ namespace file
 
         const auto& buf = ed_state.rows_to_string();
 
-        // TODO use file_raii, but first need to change file_raii ctor
+        // TODO use file_raii, but first need to change file_raii ctor to be
+        // able to accept O_* flags
         auto fd = open(ed_state.filename().c_str(), O_RDWR | O_CREAT, 0644);
         if (fd != -1 && !ftruncate(fd, static_cast<long>(buf.size()))) {
             write(fd, buf.c_str(), buf.size());

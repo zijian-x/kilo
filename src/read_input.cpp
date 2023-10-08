@@ -73,7 +73,7 @@ void process_key_press(editor_state& ed_state)
     auto c = read_key();
     switch (c) {
         case '\r':
-            // TODO
+            ed_state.insert_newline();
             break;
         case ctrl_key('q'):
             if (ed_state.dirty() && quit_times) {

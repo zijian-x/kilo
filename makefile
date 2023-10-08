@@ -38,7 +38,7 @@ all: compile
 run: compile
 	./$(MAIN)
 
-run_file: compile
+runf: compile
 	./$(MAIN) file
 
 debug: CXXFLAGS += -g

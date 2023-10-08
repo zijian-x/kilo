@@ -2,11 +2,9 @@
 *.out
 *.a
 bin/*
-compile_flags.txt
 compile_commands.json
 .clang-format
 Session.vim
 .cache
 logs
 file
-test/test_str-ad1f0fcd.o.tmp

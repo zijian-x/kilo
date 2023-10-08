@@ -117,6 +117,8 @@ public:
 
     void delete_char();
 
+    void insert_newline();
+
     str rows_to_string() const;
 
 private:

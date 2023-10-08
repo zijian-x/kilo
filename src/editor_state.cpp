@@ -1,6 +1,7 @@
 #include "editor_state.hpp"
 #include "keycode.hpp"
 
+#include <cstddef>
 #include <stdexcept>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -62,8 +63,8 @@ void editor_state::insert_char(int c)
 {
     if (m_c_row == m_content.size())
         m_content.push_back(str());
-    m_content[m_c_row].insert(m_c_col++, 1, c);
 
+    m_content[m_c_row].insert(m_c_col++, 1, c);
     ++m_dirty;
 }
 
@@ -85,6 +86,21 @@ void editor_state::delete_char()
         --m_c_row;
         ++m_dirty;
     }
+}
+
+void editor_state::insert_newline()
+{
+    auto c_row_iter = begin(m_content) + static_cast<ptrdiff_t>(m_c_row);
+    if (!m_c_col) {
+        m_content.emplace(c_row_iter, str());
+    } else {
+        auto new_row = str(c_row_iter->begin() + m_c_col, c_row_iter->end());
+        c_row_iter->erase(c_row_iter->begin() + m_c_col, c_row_iter->end());
+        m_content.emplace(c_row_iter + 1, std::move(new_row));
+        m_c_col = 0;
+    }
+    ++m_c_row;
+    ++m_dirty;
 }
 
 str editor_state::rows_to_string() const
