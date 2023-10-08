@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <fmt/core.h>
 #include <gtest/gtest.h>
@@ -9,6 +10,9 @@
 #include <string>
 
 #include "../src/str.hpp"
+
+using std::begin, std::end;
+
 class str_test : public ::testing::Test
 {
 protected:
@@ -84,6 +88,33 @@ TEST_F(str_test, move_ctor)
     ASSERT_EQ(addr, reinterpret_cast<intptr_t>(s1.c_str()));
     ASSERT_STREQ(s1.c_str(), line);
     ASSERT_EQ(s1.size(), std::strlen(line));
+}
+
+TEST_F(str_test, iter_ctor1)
+{
+    auto s1 = str(begin(s), end(s));
+
+    ASSERT_STREQ(s.c_str(), s1.c_str());
+    ASSERT_EQ(s.size(), s1.size());
+}
+
+TEST_F(str_test, iter_ctor2)
+{
+    auto rand_first = std::uniform_int_distribution<ptrdiff_t>(0,
+            static_cast<ptrdiff_t>(s.size() - 1));
+
+    for (size_t i = 0; i < 10000; ++i) {
+        auto first_idx = rand_first(mt);
+        auto rand_last = std::uniform_int_distribution<ptrdiff_t>(first_idx,
+                static_cast<ptrdiff_t>(s.size() - 1));
+        auto last_idx = rand_last(mt);
+
+        auto s1 = str(begin(s) + first_idx, begin(s) + last_idx);
+        auto stls1 = std::string(begin(stls) + first_idx, begin(stls) + last_idx);
+
+        ASSERT_STREQ(s1.c_str(), stls1.c_str());
+        ASSERT_EQ(s1.size(), stls1.size());
+    }
 }
 
 TEST_F(str_test, copy_swap_both_sbo)

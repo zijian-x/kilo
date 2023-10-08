@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <utility>
 
-str::str(const char* s)
+str::str(const_pointer s)
 {
     if (!s) [[unlikely]]
         return;
@@ -19,7 +19,6 @@ str::str(const str& s)
     : m_size{s.m_size}
 {
     ensure_capacity(m_size);
-    bptr = (sbo ? smb : dynb);
     std::strcpy(bptr, s.bptr);
 }
 
@@ -32,6 +31,13 @@ str::str(str&& s)
         std::strcpy(smb, s.smb);
     else
         bptr = dynb = std::exchange(s.bptr, nullptr);
+}
+
+str::str(const_iterator first, const_iterator last)
+    : m_size{static_cast<size_t>(std::distance(first, last))}
+{
+    ensure_capacity(m_size);
+    std::copy(first, last, this->begin());
 }
 
 str::~str()

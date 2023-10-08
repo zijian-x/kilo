@@ -23,11 +23,11 @@ public:
 
     str(const_pointer);
 
-    str(char*&&);
-
     str(const str&);
 
     str(str&&);
+
+    str(const_iterator, const_iterator);
 
     ~str();
 
