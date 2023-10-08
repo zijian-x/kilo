@@ -1,6 +1,7 @@
 #include "str.hpp"
 
 #include <cstring>
+#include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
@@ -51,16 +52,23 @@ void swap(str& lhs, str& rhs)
 
     swap(lhs.m_capacity, rhs.m_capacity);
     swap(lhs.m_size, rhs.m_size);
-
+    swap(lhs.sbo, rhs.sbo);
     if (lhs.sbo && rhs.sbo) {
         swap(lhs.smb, rhs.smb);
         lhs.bptr = lhs.smb;
+        rhs.bptr = rhs.smb;
+    } else if (lhs.sbo) {
+        // rhs was sbo, lhs was dyn
+        auto* tmp_dynb = lhs.dynb;
+        swap(lhs.smb, rhs.smb);
+        lhs.bptr = lhs.smb;
+        rhs.bptr = rhs.dynb = tmp_dynb;
+    } else if (rhs.sbo) {
+        // lhs was sbo, rhs was dyn
+        lhs.bptr = lhs.dynb = std::exchange(rhs.dynb, nullptr);
     } else {
-        swap(lhs.sbo, rhs.sbo);
         swap(lhs.dynb, rhs.dynb);
         swap(lhs.bptr, rhs.bptr);
-        if (lhs.sbo)
-            lhs.bptr = lhs.smb;
     }
 }
 
@@ -109,7 +117,7 @@ str& str::insert(std::size_t index, std::size_t count, int c)
     if (!count) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        std::out_of_range("accessing index beyond the underlying buffer size");
+        throw std::out_of_range("accessing index beyond the underlying buffer size");
 
     ensure_capacity(m_size + count);
     // a b c d e f      idx = 2, count = 2 =>
@@ -131,7 +139,7 @@ str& str::insert(std::size_t index, const str& s)
     if (!s.m_size) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        std::out_of_range("erase index out of range");
+        throw std::out_of_range("erase index out of range");
 
     ensure_capacity(m_size + s.m_size);
     std::memmove(bptr + index + s.m_size, bptr + index, m_size - index + 1);
@@ -163,7 +171,7 @@ str& str::replace(std::size_t index, std::size_t count,
     if (!count || !count2) [[unlikely]]
         return *this;
     if (index > m_size) [[unlikely]]
-        std::out_of_range("accessing index beyond the underlying buffer size");
+        throw std::out_of_range("accessing index beyond the underlying buffer size");
 
     if (count == count2) {
         auto new_size = index + count;
@@ -229,7 +237,7 @@ str& str::replace(std::size_t index, std::size_t count,
 str& str::erase(std::size_t index, std::size_t count)
 {
     if (index > m_size)
-        std::out_of_range("accessing index beyond the underlying buffer size");
+        throw std::out_of_range("accessing index beyond the underlying buffer size");
 
     if (count == std::numeric_limits<std::size_t>::max()
             || index + count >= m_size) {
@@ -252,6 +260,19 @@ str& str::erase(std::size_t index, std::size_t count)
     bptr[m_size] = 0;
 
     return *this;
+}
+
+str& str::erase(const_iterator it)
+{
+    auto index = static_cast<std::size_t>(it - this->begin());
+    return this->erase(index, 1);
+}
+
+str& str::erase(const_iterator first, const_iterator last)
+{
+    auto index = static_cast<std::size_t>(first - this->begin());
+    auto cnt = static_cast<std::size_t>(last - first);
+    return this->erase(index, cnt);
 }
 
 void str::ensure_capacity(std::size_t new_size)

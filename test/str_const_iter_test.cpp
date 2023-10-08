@@ -16,7 +16,7 @@ class str_const_iter_test : public ::testing::Test
 {
 protected:
     str s;
-    std::string cmp;
+    std::string stls;
     const char* line = "Lorem ipsum dolor sit amet, consectetur:"
                        "adipiscing elit. Quantum Aristoxeni"
                        "ingenium consumptum videmus in musicis?"
@@ -38,11 +38,11 @@ protected:
     void SetUp() override
     {
         s = line;
-        cmp = line;
+        stls = line;
 
         ASSERT_STREQ(s.c_str(), line);
-        ASSERT_STREQ(s.c_str(), cmp.c_str());
-        ASSERT_EQ(s.size(), cmp.size());
+        ASSERT_STREQ(s.c_str(), stls.c_str());
+        ASSERT_EQ(s.size(), stls.size());
     }
 };
 
@@ -50,7 +50,7 @@ TEST_F(str_const_iter_test, range_based_for_read)
 {
     size_t i = 0;
     for (auto c : s)
-        ASSERT_EQ(c, cmp[i++]);
+        ASSERT_EQ(c, stls[i++]);
 }
 
 TEST_F(str_const_iter_test, range_based_for_write)
@@ -60,11 +60,11 @@ TEST_F(str_const_iter_test, range_based_for_write)
         c = 'a';
         ASSERT_EQ(s[i++], 'a');
     }
-    for (auto& c : cmp) {
+    for (auto& c : stls) {
         c = 'a';
     }
 
-    ASSERT_STREQ(s.c_str(), cmp.c_str());
+    ASSERT_STREQ(s.c_str(), stls.c_str());
 }
 
 TEST_F(str_const_iter_test, iter_copy)
@@ -145,7 +145,7 @@ TEST_F(str_const_iter_test, greater)
 TEST_F(str_const_iter_test, random_access_read)
 {
     auto it = std::cbegin(s);
-    auto cmp_it = std::cbegin(cmp);
+    auto cmp_it = std::cbegin(stls);
     auto rand = std::uniform_int_distribution<ptrdiff_t>(0,
             static_cast<ptrdiff_t>(s.size()) - 1);
 
@@ -185,7 +185,7 @@ TEST_F(str_const_iter_test, stl_count)
 {
     for (size_t i = 0; i < s.size(); ++i) {
         auto cnt1 = std::count(cbegin(s), cend(s), s[i]);
-        auto cnt2 = std::count(cbegin(cmp), cend(cmp), cmp[i]);
+        auto cnt2 = std::count(cbegin(stls), cend(stls), stls[i]);
         ASSERT_EQ(cnt1, cnt2);
     }
 

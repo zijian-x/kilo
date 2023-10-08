@@ -262,7 +262,24 @@ TEST_F(str_iter_test, stl_count)
     }
 }
 
-TEST_F(str_iter_test, stl_distance)
+TEST_F(str_iter_test, stl_distance1)
+{
+    auto rand_idx = std::uniform_int_distribution<size_t>(0, s.size());
+    for (size_t i = 0; i < 10000; ++i) {
+        auto idx1 = rand_idx(mt);
+        auto idx2 = rand_idx(mt);
+        auto moved_it1 = begin(s);
+        auto moved_it2 = begin(s);
+
+        std::advance(moved_it1, idx1);
+        std::advance(moved_it2, idx2);
+
+        ASSERT_EQ(std::distance(begin(s), moved_it1), moved_it1 - begin(s));
+        ASSERT_EQ(std::distance(begin(s), moved_it2), moved_it2 - begin(s));
+    }
+}
+
+TEST_F(str_iter_test, stl_distance2)
 {
     auto rand_idx = std::uniform_int_distribution<size_t>(0, s.size());
     for (size_t i = 0; i < 10000; ++i) {
