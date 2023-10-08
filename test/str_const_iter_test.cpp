@@ -193,8 +193,6 @@ TEST_F(str_const_iter_test, stl_count)
     auto it2 = cbegin(s);
 }
 
-/*
- * FIXME somehoe std::advance and std::distance don't work on const_iterator
 TEST_F(str_const_iter_test, stl_distance)
 {
     auto rand_idx = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -212,4 +210,3 @@ TEST_F(str_const_iter_test, stl_distance)
         ASSERT_EQ(dist, idx2 - idx1);
     }
 }
-*/
