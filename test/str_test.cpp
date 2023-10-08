@@ -8,6 +8,7 @@
 #include <iterator>
 #include <random>
 #include <string>
+#include <vector>
 
 #include "../src/str.hpp"
 
@@ -88,6 +89,58 @@ TEST_F(str_test, move_ctor)
     ASSERT_EQ(addr, reinterpret_cast<intptr_t>(s1.c_str()));
     ASSERT_STREQ(s1.c_str(), line);
     ASSERT_EQ(s1.size(), std::strlen(line));
+}
+
+TEST_F(str_test, move_ctor_rand)
+{
+    auto generate_random_string = [](size_t size) {
+        auto rand_c = std::uniform_int_distribution<char>('!', '~');
+        auto mt = std::mt19937{};
+        auto string = std::string();
+        string.reserve(size);
+        for (size_t i = 0; i < size; ++i)
+            string.push_back(rand_c(mt));
+
+        return string;
+    };
+    auto rand_size = std::uniform_int_distribution<size_t>(0, 50);
+
+    for (auto i = 0; i < 1000; ++i) {
+        auto s1 = str();
+        auto size = rand_size(mt);
+        auto rand_stls = generate_random_string(size);
+        auto rand_str = str(rand_stls.c_str());
+        ASSERT_STREQ(rand_str.c_str(), rand_stls.c_str());
+        ASSERT_EQ(rand_str.size(), rand_stls.size());
+
+        s1 = str(std::move(rand_str));
+
+        ASSERT_STREQ(s1.c_str(), rand_stls.c_str());
+        ASSERT_EQ(s1.size(), rand_stls.size());
+    }
+}
+
+TEST_F(str_test, moved_reuse)
+{
+    auto generate_random_string = [](size_t size) {
+        auto rand_c = std::uniform_int_distribution<char>('!', '~');
+        auto mt = std::mt19937{};
+        auto string = str();
+        string.resize(size);
+        for (size_t i = 0; i < size; ++i)
+            string.push_back(rand_c(mt));
+
+        return string;
+    };
+
+    auto vec = std::vector<str>();
+
+    auto rand_size = std::uniform_int_distribution<size_t>(0, 50);
+    auto i = 0;
+    for (auto line = generate_random_string(rand_size(mt)); i++ < 1000;
+            line = str(generate_random_string(rand_size(mt)))) {
+        vec.push_back(std::move(line));
+    }
 }
 
 TEST_F(str_test, iter_ctor1)
@@ -185,6 +238,36 @@ TEST_F(str_test, copy_swap3)
 
     ASSERT_STREQ(s.c_str(), line);
     ASSERT_EQ(s.size(), std::strlen(line));
+}
+
+TEST_F(str_test, copy_swap_random)
+{
+    auto generate_random_string = [](size_t size) {
+        auto rand_c = std::uniform_int_distribution<char>('!', '~');
+        auto mt = std::mt19937{};
+        auto string = std::string();
+        string.reserve(size);
+        for (size_t i = 0; i < size; ++i)
+            string.push_back(rand_c(mt));
+
+        return string;
+    };
+
+    auto rand_size = std::uniform_int_distribution<size_t>(0, 50);
+
+    for (auto i = 0; i < 1000; ++i) {
+        auto s1 = str();
+        auto size = rand_size(mt);
+        auto rand_stls = generate_random_string(size);
+        auto rand_str = str(rand_stls.c_str());
+        ASSERT_STREQ(rand_str.c_str(), rand_stls.c_str());
+        ASSERT_EQ(rand_str.size(), rand_stls.size());
+
+        s1 = str(std::move(rand_str));
+
+        ASSERT_STREQ(s1.c_str(), rand_stls.c_str());
+        ASSERT_EQ(s1.size(), rand_stls.size());
+    }
 }
 
 TEST_F(str_test, Front)
@@ -361,6 +444,14 @@ TEST_F(str_test, remove_newline)
     s.remove_newline();
 
     ASSERT_EQ(s.size(), orig_size);
+}
+
+TEST_F(str_test, remove_newline2)
+{
+    auto blank_str = str("\n\n\n\r\r\r\n\r\n\r\r");
+    blank_str.remove_newline();
+
+    ASSERT_EQ(blank_str.size(), 0);
 }
 
 TEST_F(str_test, replace1)

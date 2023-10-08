@@ -27,10 +27,14 @@ str::str(str&& s)
     , m_size{s.m_size}
     , sbo{s.sbo}
 {
-    if (sbo)
+    if (sbo) {
         std::strcpy(smb, s.smb);
-    else
+    } else {
         bptr = dynb = std::exchange(s.bptr, nullptr);
+        s.dynb = nullptr; // nulling the dynb so that the moved out dyn buffer
+                          // address doesn't get swapped into a tmp obj and get
+                          // destroyed when reused again
+    }
 }
 
 str::str(const_iterator first, const_iterator last)
@@ -163,10 +167,7 @@ str& str::clear()
 
 str& str::remove_newline()
 {
-    if (!m_size)
-        return *this;
-
-    while (bptr[m_size - 1] == '\r' || bptr[m_size - 1] == '\n')
+    while (m_size && (bptr[m_size - 1] == '\r' || bptr[m_size - 1] == '\n'))
         bptr[--m_size] = '\0';
     return *this;
 }
