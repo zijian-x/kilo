@@ -3,7 +3,7 @@
 #include "editor_state.hpp"
 #include "file_io.hpp"
 #include "keycode.hpp"
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <stdexcept>
 
 static constexpr int ctrl_key(int c)
@@ -67,7 +67,8 @@ str prompt_input(editor_state& ed_state, const str& prompt)
     auto input = str();
 
     for (;;) {
-        ed_state.status_msg().set_msg(prompt);
+        auto msg = fmt::format("{}{}", prompt.c_str(), input.c_str());
+        ed_state.status_msg().set_msg(msg.c_str());
         refresh_screen(ed_state);
 
         int c = read_key();
@@ -81,13 +82,10 @@ str prompt_input(editor_state& ed_state, const str& prompt)
             input.clear();
             return input;
         } else if (c == '\r') {
-            // TODO maybe return even if nothing is put in
-            if (!input.empty()) {
-                ed_state.status_msg().clear();
-                return input;
-            }
-        } else if (!iscntrl('c'))
+            return input;
+        } else if (!iscntrl('c')) {
             input.push_back(static_cast<char>(c));
+        }
     }
 }
 
