@@ -31,10 +31,6 @@ protected:
                        "vígillas suscipere soleamus.";
     std::mt19937 mt{};
 
-    void func(str::const_iterator const_it)
-    {
-    }
-
     void SetUp() override
     {
         s = line;
@@ -170,16 +166,6 @@ TEST_F(str_const_iter_test, stl_find)
     }
 }
 */
-
-TEST_F(str_const_iter_test, stl_remove)
-{
-    // TODO add member func str.erase(it) and test remove-erase idiom
-}
-
-TEST_F(str_const_iter_test, stl_unique)
-{
-    // TODO add member func str.erase(it) and test remove-erase idiom
-}
 
 TEST_F(str_const_iter_test, stl_count)
 {
