@@ -1,9 +1,12 @@
 #include "str.hpp"
 
+#include <vector>
 #include <cstring>
 #include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
+
+using std::size_t;
 
 str::str(const_pointer s)
 {
@@ -88,7 +91,7 @@ void str::push_back(char c)
 void str::pop_back()
 { bptr[--m_size] = 0; }
 
-str& str::append(std::size_t count, char c)
+str& str::append(size_t count, char c)
 {
     ensure_capacity(m_size + count);
     std::memset(bptr + m_size, c, count);
@@ -98,7 +101,7 @@ str& str::append(std::size_t count, char c)
     return *this;
 }
 
-str& str::append(const str& s, std::size_t n)
+str& str::append(const str& s, size_t n)
 {
     auto copy_size = std::min(s.size(), n);
     if (!copy_size) [[unlikely]]
@@ -112,7 +115,7 @@ str& str::append(const str& s, std::size_t n)
     return *this;
 }
 
-str& str::resize(std::size_t count, char c)
+str& str::resize(size_t count, char c)
 {
     ensure_capacity(count);
     for (auto i = m_size; i < count; ++i)
@@ -123,7 +126,7 @@ str& str::resize(std::size_t count, char c)
     return *this;
 }
 
-str& str::insert(std::size_t index, std::size_t count, int c)
+str& str::insert(size_t index, size_t count, int c)
 {
     if (!count) [[unlikely]]
         return *this;
@@ -145,7 +148,7 @@ str& str::insert(std::size_t index, std::size_t count, int c)
     return *this;
 }
 
-str& str::insert(std::size_t index, const str& s)
+str& str::insert(size_t index, const str& s)
 {
     if (!s.m_size) [[unlikely]]
         return *this;
@@ -173,8 +176,8 @@ str& str::remove_newline()
     return *this;
 }
 
-str& str::replace(std::size_t index, std::size_t count,
-        std::size_t count2, char c)
+str& str::replace(size_t index, size_t count,
+        size_t count2, char c)
 {
     if (!count || !count2) [[unlikely]]
         return *this;
@@ -242,12 +245,12 @@ str& str::replace(std::size_t index, std::size_t count,
     return *this;
 }
 
-str& str::erase(std::size_t index, std::size_t count)
+str& str::erase(size_t index, size_t count)
 {
     if (index > m_size)
         throw std::out_of_range("accessing index beyond the underlying buffer size");
 
-    if (count == std::numeric_limits<std::size_t>::max()
+    if (count == std::numeric_limits<size_t>::max()
             || index + count >= m_size) {
         bptr[index] = 0;
         m_size = index;
@@ -272,18 +275,56 @@ str& str::erase(std::size_t index, std::size_t count)
 
 str& str::erase(const_iterator it)
 {
-    auto index = static_cast<std::size_t>(it - this->begin());
+    auto index = static_cast<size_t>(it - this->begin());
     return this->erase(index, 1);
 }
 
 str& str::erase(const_iterator first, const_iterator last)
 {
-    auto index = static_cast<std::size_t>(first - this->begin());
-    auto cnt = static_cast<std::size_t>(last - first);
+    auto index = static_cast<size_t>(first - this->begin());
+    auto cnt = static_cast<size_t>(last - first);
     return this->erase(index, cnt);
 }
 
-void str::ensure_capacity(std::size_t new_size)
+static std::vector<size_t> gen_lps(const str& needle)
+{
+    auto lps = std::vector<size_t>(needle.size(), 0);
+    size_t i = 0, j = 1;
+    while (j < needle.size()) {
+        if (needle[i] == needle[j]) {
+            lps[j++] = ++i;
+        } else {
+            if (!i)
+                ++j;
+            else
+                i = lps[i - 1];
+        }
+    }
+    return lps;
+}
+
+size_t str::find(const str& needle) const
+{
+    if (needle.empty())
+        return 0;
+
+    auto lps = gen_lps(needle);
+    for (size_t i = 0, j = 0; i < m_size && needle.size() <= m_size;) {
+        for (; j < needle.size() && bptr[i + j] == needle[j]; ++j);
+        if (j == needle.size())
+            return i;
+
+        auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
+                                                //    substr
+        i += skip;                              // 2: skip the lps
+        j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
+                                                //    prefix too
+    }
+
+    return static_cast<size_t>(-1);
+}
+
+void str::ensure_capacity(size_t new_size)
 {
     if (new_size < m_capacity)
         return;

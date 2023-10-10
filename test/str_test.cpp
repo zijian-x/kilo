@@ -42,6 +42,17 @@ protected:
         ASSERT_STREQ(s.c_str(), stls.c_str());
         ASSERT_EQ(s.size(), stls.size());
     }
+
+    str gen_str(char from, char to, size_t size)
+    {
+        auto ret = str();
+        ret.resize(size);
+        auto rand_c = std::uniform_int_distribution<char>(from, to);
+        for (size_t i = 0; i < ret.size(); ++i)
+            ret[i] = rand_c(mt);
+
+        return ret;
+    }
 };
 
 TEST_F(str_test, default_ctor)
@@ -674,5 +685,50 @@ TEST_F(str_test, erase_iter3)
 
         ASSERT_STREQ(s.c_str(), stls.c_str());
         ASSERT_EQ(s.size(), stls.size());
+    }
+}
+
+TEST_F(str_test, find1)
+{
+    for (char c = 'a'; c <= 'z'; ++c) {
+        for (auto i = 0; i < 100; ++i) {
+            auto s = gen_str('a', c, 50);
+            auto stls = std::string(s.c_str());
+
+            for (auto j = 0; j < 100; ++j) {
+                auto rand_begin = std::uniform_int_distribution<ptrdiff_t>(0,
+                        static_cast<ptrdiff_t>(s.size() - 1));
+                auto begin_idx = rand_begin(mt);
+                auto rand_end = std::uniform_int_distribution<ptrdiff_t>(begin_idx,
+                        static_cast<ptrdiff_t>(s.size()));
+                auto end_idx = rand_end(mt);
+
+                auto substr = str(begin(s) + begin_idx, begin(s) + end_idx);
+                ASSERT_EQ(s.find(substr), stls.find(substr.c_str()));
+            }
+        }
+    }
+}
+
+TEST_F(str_test, find2)
+{
+    auto rand_haystack_size = std::uniform_int_distribution<size_t>(0, 120);
+    auto rand_needle_size = std::uniform_int_distribution<size_t>(0, 100);
+    for (char c = '!'; c <= '~'; ++c) {
+        for (auto i = 0; i < 100; ++i) {
+            auto haystack = gen_str('!', c, rand_haystack_size(mt));
+            auto stls_haystack = std::string(haystack.c_str());
+
+            for (auto j = 0; j < 20; ++j) {
+                auto needle = gen_str('!', c, rand_needle_size(mt));
+                auto stls_needle = std::string(needle.c_str());
+                ASSERT_EQ(haystack.find(needle), stls_haystack.find(stls_needle))
+                    << "haystack size: " << haystack.size() << '\n'
+                    << "needle size: " << needle.size() << '\n';
+                ASSERT_EQ(needle.find(haystack), stls_needle.find(stls_haystack))
+                    << "haystack size: " << haystack.size() << '\n'
+                    << "needle size: " << needle.size() << '\n';
+            }
+        }
     }
 }

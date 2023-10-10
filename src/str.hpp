@@ -121,6 +121,8 @@ public:
 
     str& erase(const_iterator, const_iterator);
 
+    std::size_t find(const str&) const;
+
     str& remove_newline();
 
 private:
@@ -134,5 +136,5 @@ private:
     bool sbo{true};
     char* bptr{smb};
 
-    void ensure_capacity(std::size_t extra_len);
+    void ensure_capacity(std::size_t);
 };
