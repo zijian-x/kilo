@@ -113,6 +113,9 @@ void process_key_press(editor_state& ed_state)
         case ctrl_key('s'):
             file::save_file(ed_state);
             break;
+        case ctrl_key('f'):
+            ed_state.find();
+            break;
         case editor_key::BACKSPACE:
         case ctrl_key('h'):
         case editor_key::DEL:

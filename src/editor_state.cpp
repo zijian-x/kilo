@@ -1,5 +1,6 @@
 #include "editor_state.hpp"
 #include "keycode.hpp"
+#include "read_input.hpp"
 
 #include <cstddef>
 #include <stdexcept>
@@ -101,6 +102,24 @@ void editor_state::insert_newline()
     }
     ++m_c_row;
     ++m_dirty;
+}
+
+void editor_state::find()
+{
+    auto query = prompt_input(*this, "Search: ");
+    if (query.empty())
+        return;
+
+    auto i = m_c_row;
+    auto size = m_content.size();
+    do {
+        if (auto pos = m_content[i].find(query); pos != static_cast<size_t>(-1)) {
+            m_c_row = i;
+            m_c_col = pos;
+            return;
+        }
+        i = (i + 1) % size;
+    } while (i != m_c_row);
 }
 
 str editor_state::rows_to_string() const

@@ -10,8 +10,9 @@
 
 static constexpr unsigned short TABSTOP = 8;
 static constexpr unsigned short QUIT_TIMES = 1;
-static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save | "
-                                           "CTRL-Q = Quit";
+static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save"
+                                           " | CTRL-Q = Quit"
+                                           " | CTRL-F = Find";
 
 class status_message
 {
@@ -124,6 +125,8 @@ public:
     void delete_char();
 
     void insert_newline();
+
+    void find();
 
     str rows_to_string() const;
 
