@@ -62,7 +62,8 @@ static int read_key()
     return c == '\x1b' ? read_arrow_key().value_or(c) : c;
 }
 
-str prompt_input(editor_state& ed_state, const str& prompt)
+str prompt_input(editor_state& ed_state, const str& prompt,
+        std::optional<std::function<void(editor_state&, const str&)>> callback)
 {
     auto input = str();
 
@@ -86,6 +87,9 @@ str prompt_input(editor_state& ed_state, const str& prompt)
         } else if (!iscntrl('c')) {
             input.push_back(static_cast<char>(c));
         }
+
+        if (callback.has_value())
+            callback.value()(ed_state, input);
     }
 }
 

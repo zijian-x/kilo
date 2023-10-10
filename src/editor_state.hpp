@@ -14,6 +14,11 @@ static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save"
                                            " | CTRL-Q = Quit"
                                            " | CTRL-F = Find";
 
+enum class search_direction
+{
+    forward, backward
+};
+
 class status_message
 {
 public:
@@ -139,6 +144,8 @@ private:
     std::size_t m_rowoff{}, m_coloff{};
     std::vector<str> m_content; // TODO replace vector with custom class
     status_message m_status_msg;
+
+    void incr_find(const str&);
 };
 
 void quit_editor();

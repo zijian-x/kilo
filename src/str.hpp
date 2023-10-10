@@ -57,7 +57,7 @@ public:
     { return bptr; }
 
     bool empty() const
-    { return this->m_size == 0; }
+    { return !this->m_size; }
 
     std::size_t size() const
     { return this->m_size; }

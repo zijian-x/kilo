@@ -164,8 +164,8 @@ str& str::insert(size_t index, const str& s)
 
 str& str::clear()
 {
-    bptr[0] = 0;
     m_size = 0;
+    bptr[m_size] = 0;
     return *this;
 }
 

@@ -104,12 +104,8 @@ void editor_state::insert_newline()
     ++m_dirty;
 }
 
-void editor_state::find()
+void editor_state::incr_find(const str& query)
 {
-    auto query = prompt_input(*this, "Search: ");
-    if (query.empty())
-        return;
-
     auto i = m_c_row;
     auto size = m_content.size();
     do {
@@ -120,6 +116,26 @@ void editor_state::find()
         }
         i = (i + 1) % size;
     } while (i != m_c_row);
+}
+
+void editor_state::find()
+{
+    auto cache_row = m_c_row;
+    auto cache_col = m_c_col;
+    auto cache_rowoff = m_rowoff;
+    auto cache_coloff = m_coloff;
+    auto callback = std::function<void(editor_state&, const str&)>
+        (&editor_state::incr_find);
+
+    auto query = prompt_input(*this, "Search: ", callback);
+    if (!query.empty())
+        return;
+
+    m_c_row = cache_row;
+    m_c_col = cache_col;
+    m_rowoff = cache_rowoff;
+    m_coloff = cache_coloff;
+    m_status_msg.set_msg("Search aborted");
 }
 
 str editor_state::rows_to_string() const
