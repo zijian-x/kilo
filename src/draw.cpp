@@ -37,8 +37,7 @@ void draw_status_msg_bar(editor_state& ed_state, str& buf)
 
     buf.append(esc_char::CLEAR_LINE);
     const auto& status_msg = ed_state.status_msg();
-    if (status_msg.msg().size() &&
-            duration_cast<seconds>(system_clock::now()
+    if (status_msg.msg().size() && duration_cast<seconds>(system_clock::now()
                 - status_msg.timestamp()).count() < 2)
         buf.append(status_msg.msg(), ed_state.screen_col());
 }

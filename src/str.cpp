@@ -99,13 +99,16 @@ str& str::append(size_type count, value_type c)
 }
 
 str& str::append(const str& s, size_type n)
+{ return this->append(s.c_str(), n); }
+
+str& str::append(const_pointer s, size_type n)
 {
-    auto copy_size = std::min(s.size(), n);
+    auto copy_size = std::min(std::strlen(s), n);
     if (!copy_size) [[unlikely]]
         return *this;
 
     ensure_capacity(m_size + copy_size + 1);
-    std::memcpy(bptr + m_size, s.c_str(), copy_size);
+    std::memcpy(bptr + m_size, s, copy_size);
     m_size += copy_size;
     bptr[m_size] = 0;
 

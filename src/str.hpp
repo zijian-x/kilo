@@ -102,6 +102,8 @@ public:
 
     str& append(const str&, size_type count = npos);
 
+    str& append(const_pointer, size_type count = npos);
+
     template<typename input_iter>
     str& append(input_iter first, input_iter last)
     {
