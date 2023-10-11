@@ -32,6 +32,7 @@ protected:
     {
         s = line;
         stls = line;
+        mt.seed(std::random_device{}());
 
         ASSERT_STREQ(s.c_str(), line);
         ASSERT_STREQ(s.c_str(), stls.c_str());
