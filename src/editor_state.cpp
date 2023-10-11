@@ -109,7 +109,7 @@ void editor_state::incr_find(const str& query)
     auto i = m_c_row;
     auto size = m_content.size();
     do {
-        if (auto pos = m_content[i].find(query); pos != static_cast<size_t>(-1)) {
+        if (auto pos = m_content[i].find(query); pos != str::npos) {
             m_c_row = i;
             m_c_col = pos;
             return;

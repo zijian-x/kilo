@@ -11,14 +11,14 @@ str::str(const_pointer s)
         return;
 
     m_size = std::strlen(s);
-    ensure_capacity(m_size);
+    reserve(m_size);
     std::strcpy(bptr, s);
 }
 
 str::str(const str& s)
     : m_size{s.m_size}
 {
-    ensure_capacity(m_size);
+    reserve(m_size);
     std::strcpy(bptr, s.bptr);
 }
 
@@ -40,7 +40,7 @@ str::str(str&& s)
 str::str(const_iterator first, const_iterator last)
     : m_size{static_cast<size_type>(std::distance(first, last))}
 {
-    ensure_capacity(m_size);
+    reserve(m_size);
     std::copy(first, last, this->begin());
 }
 
@@ -90,7 +90,7 @@ void str::pop_back()
 
 str& str::append(size_type count, value_type c)
 {
-    ensure_capacity(m_size + count);
+    reserve(m_size + count);
     std::memset(bptr + m_size, c, count);
     m_size += count;
     bptr[m_size] = 0;
@@ -107,7 +107,7 @@ str& str::append(const_pointer s, size_type n)
     if (!copy_size) [[unlikely]]
         return *this;
 
-    ensure_capacity(m_size + copy_size + 1);
+    reserve(m_size + copy_size + 1);
     std::memcpy(bptr + m_size, s, copy_size);
     m_size += copy_size;
     bptr[m_size] = 0;
@@ -117,13 +117,26 @@ str& str::append(const_pointer s, size_type n)
 
 str& str::resize(size_type count, value_type c)
 {
-    ensure_capacity(count);
+    reserve(count);
     for (auto i = m_size; i < count; ++i)
         bptr[i] = c;
     m_size = count;
     bptr[m_size] = 0;
 
     return *this;
+}
+
+void str::reserve(size_type new_size)
+{
+    if (new_size < m_capacity)
+        return;
+
+    m_capacity = new_size + 1;
+    auto* new_buf = new value_type[m_capacity]{};
+    std::strcpy(new_buf, bptr);
+    if (!std::exchange(sbo, false))
+        delete[] bptr;
+    bptr = dynb = new_buf;
 }
 
 str& str::insert(size_type index, size_type count, int c)
@@ -133,7 +146,7 @@ str& str::insert(size_type index, size_type count, int c)
     if (index > m_size) [[unlikely]]
         throw std::out_of_range("accessing index beyond the underlying buffer size");
 
-    ensure_capacity(m_size + count);
+    reserve(m_size + count);
     // a b c d e f      idx = 2, count = 2 =>
                         // 1. arg = index + count = 2 + 2 = 4
                         // 2. arg = index = 2
@@ -155,7 +168,7 @@ str& str::insert(size_type index, const str& s)
     if (index > m_size) [[unlikely]]
         throw std::out_of_range("erase index out of range");
 
-    ensure_capacity(m_size + s.m_size);
+    reserve(m_size + s.m_size);
     std::memmove(bptr + index + s.m_size, bptr + index, m_size - index + 1);
     std::memcpy(bptr + index, s.bptr, s.m_size);
     m_size += s.m_size;
@@ -185,7 +198,7 @@ str& str::replace(size_type index, size_type count, size_type count2, value_type
 
     if (count == count2) {
         auto new_size = index + count;
-        ensure_capacity(new_size);
+        reserve(new_size);
         for (size_type i = 0; i < count; ++i)
             bptr[index + i] = c;
         m_size = std::max(m_size, new_size);
@@ -195,7 +208,7 @@ str& str::replace(size_type index, size_type count, size_type count2, value_type
         // a a b b b b a
         //  realloc = m_size - std::min(count, m_size - index) + count2 = 5 - 2 + 4 = 7
         auto new_size = m_size + count2 - std::min(count, m_size - index);
-        ensure_capacity(new_size);
+        reserve(new_size);
 
         //  std::memmove():
         //      1. arg dest: idx + cnt2 = 2 + 4 = 6
@@ -218,7 +231,7 @@ str& str::replace(size_type index, size_type count, size_type count2, value_type
             bptr[index + i] = 0;
 
         if (replace < count2) {
-            ensure_capacity(m_size + count2 - replace);
+            reserve(m_size + count2 - replace);
             m_size = m_size + count2 - replace;
         } else {
             // 0 1 2 3 4 5 6 7 8    len = 9
@@ -319,18 +332,5 @@ str::size_type str::find(const str& needle) const
                                                 //    prefix too
     }
 
-    return static_cast<size_type>(-1);
-}
-
-void str::ensure_capacity(size_type new_size)
-{
-    if (new_size < m_capacity)
-        return;
-
-    m_capacity = new_size + 1;
-    auto* new_buf = new value_type[m_capacity]{};
-    std::strcpy(new_buf, bptr);
-    if (!std::exchange(sbo, false))
-        delete[] bptr;
-    bptr = dynb = new_buf;
+    return str::npos;
 }

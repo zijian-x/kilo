@@ -6,7 +6,6 @@
 
 namespace esc_char
 {
-    static constexpr const char* NEWLINE = "\r\n";
     static constexpr const char* CLEAR_SCREEN = "\x1b[2J";
     static constexpr const char* CLEAR_LINE = "\x1b[K";
     static constexpr const char* CLEAR_CURSOR_POS = "\x1b[H";
@@ -14,6 +13,7 @@ namespace esc_char
     static constexpr const char* SHOW_CURSOR = "\x1b[?25h";
     static constexpr const char* INVERT_COLOR = "\x1b[7m";
     static constexpr const char* RESET_COLOR = "\x1b[m";
+    static constexpr const char* NEWLINE = "\r\n";
 }
 
 enum editor_key : int

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <bits/chrono.h>
+#include <cctype>
 #include <chrono>
 #include <format>
 #include <functional>
@@ -47,8 +48,8 @@ void draw_statusbar(editor_state& ed_state, str& buf)
     buf.append(esc_char::INVERT_COLOR);
 
     auto file_info = str(std::format("KILO_EDITOR | {} - {} lines{}",
-                (ed_state.filename().size() ?
-                 ed_state.filename().c_str() : "[No Name]"),
+                (ed_state.filename().empty() ?
+                 "[No Name]" : ed_state.filename().c_str()),
                 ed_state.content().size(),
                 (ed_state.dirty() ? " [+]" : "")).c_str());
     auto line_info = str(std::format("{}:{}",
@@ -80,11 +81,11 @@ str render_row(const str& row)
 void draw_rows(editor_state& ed_state, str& buf)
 {
     const auto& contents = ed_state.content();
-    for (unsigned int i = 0; i < ed_state.screen_row(); ++i) {
+    for (size_t i = 0; i < ed_state.screen_row(); ++i) {
         if (auto file_row = i + ed_state.rowoff(); file_row < contents.size()) {
             const auto render = render_row(contents[file_row]);
-            auto start_index = std::min(static_cast<size_t>(ed_state.coloff()),
-                    render.size());
+            auto start_index = std::min(ed_state.coloff(), render.size());
+
             buf.append(render.c_str() + start_index, ed_state.screen_col());
         } else if (!contents.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);

@@ -121,6 +121,8 @@ public:
 
     str& resize(size_type, value_type c = '\0');
 
+    void reserve(size_type);
+
     str& clear();
 
     str& erase(size_type, size_type count = npos);
@@ -143,6 +145,4 @@ private:
     };
     bool sbo{true};
     value_type* bptr{smb};
-
-    void ensure_capacity(size_type);
 };
