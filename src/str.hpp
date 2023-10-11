@@ -10,6 +10,7 @@ class str
 {
 public:
     using value_type = char;
+    using size_type = std::size_t;
     using reference = value_type&;
     using const_reference = const value_type&;
     using pointer = value_type*;
@@ -18,6 +19,8 @@ public:
     using iterator_category = std::contiguous_iterator_tag;
     using iterator = pointer;
     using const_iterator = const_pointer;
+
+    static constexpr size_type npos = static_cast<size_type>(-1);
 
     str() = default;
 
@@ -47,10 +50,10 @@ public:
     const_pointer operator->() const
     { return bptr; }
 
-    reference operator[](std::size_t i)
+    reference operator[](size_type i)
     { return bptr[i]; }
 
-    const_reference operator[](std::size_t i) const
+    const_reference operator[](size_type i) const
     { return bptr[i]; }
 
     const_pointer c_str() const
@@ -59,10 +62,10 @@ public:
     bool empty() const
     { return !this->m_size; }
 
-    std::size_t size() const
+    size_type size() const
     { return this->m_size; }
 
-    std::size_t capacity() const
+    size_type capacity() const
     { return this->m_capacity; }
 
     reference front()
@@ -95,46 +98,53 @@ public:
     const_iterator cend() const
     { return const_iterator(&bptr[0]); }
 
-    void push_back(char);
+    void push_back(value_type);
 
     void pop_back();
 
-    str& append(std::size_t, char);
+    str& append(size_type, value_type);
 
-    str& append(const str&,
-            std::size_t count = std::numeric_limits<std::size_t>::max());
+    str& append(const str&, size_type count = npos);
 
-    str& insert(std::size_t, std::size_t, int);
+    template<typename input_iter>
+    str& append(input_iter first, input_iter last)
+    {
+        while (first != last)
+            this->append(1, *first++);
 
-    str& insert(std::size_t, const str&);
+        return *this;
+    }
 
-    str& replace(std::size_t, std::size_t, std::size_t, char);
+    str& insert(size_type, size_type, int);
 
-    str& resize(std::size_t, char c = '\0');
+    str& insert(size_type, const str&);
+
+    str& replace(size_type, size_type, size_type, value_type);
+
+    str& resize(size_type, value_type c = '\0');
 
     str& clear();
 
-    str& erase(std::size_t,
-            std::size_t count = std::numeric_limits<std::size_t>::max());
+    str& erase(size_type, size_type count = npos);
 
     str& erase(const_iterator pos);
 
     str& erase(const_iterator, const_iterator);
 
-    std::size_t find(const str&) const;
+    size_type find(const str&) const;
 
     str& remove_newline();
 
 private:
     static constexpr unsigned int SBO_SIZE = 15;
-    std::size_t m_capacity{SBO_SIZE};
-    std::size_t m_size{0};
+    size_type m_capacity{SBO_SIZE};
+    size_type m_size{0};
     union {
-        char smb[15]{};
-        char* dynb;
+        value_type smb[15]{};
+        value_type* dynb;
     };
     bool sbo{true};
-    char* bptr{smb};
+    value_type* bptr{smb};
 
-    void ensure_capacity(std::size_t);
+    void ensure_capacity(size_type);
 };

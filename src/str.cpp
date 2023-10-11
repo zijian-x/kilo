@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include <utility>
 
-using std::size_t;
-
 str::str(const_pointer s)
 {
     if (!s) [[unlikely]]
@@ -41,7 +39,7 @@ str::str(str&& s)
 }
 
 str::str(const_iterator first, const_iterator last)
-    : m_size{static_cast<size_t>(std::distance(first, last))}
+    : m_size{static_cast<size_type>(std::distance(first, last))}
 {
     ensure_capacity(m_size);
     std::copy(first, last, this->begin());
@@ -85,13 +83,13 @@ void swap(str& lhs, str& rhs)
     }
 }
 
-void str::push_back(char c)
+void str::push_back(value_type c)
 { this->append(1, c); }
 
 void str::pop_back()
 { bptr[--m_size] = 0; }
 
-str& str::append(size_t count, char c)
+str& str::append(size_type count, value_type c)
 {
     ensure_capacity(m_size + count);
     std::memset(bptr + m_size, c, count);
@@ -101,7 +99,7 @@ str& str::append(size_t count, char c)
     return *this;
 }
 
-str& str::append(const str& s, size_t n)
+str& str::append(const str& s, size_type n)
 {
     auto copy_size = std::min(s.size(), n);
     if (!copy_size) [[unlikely]]
@@ -115,7 +113,7 @@ str& str::append(const str& s, size_t n)
     return *this;
 }
 
-str& str::resize(size_t count, char c)
+str& str::resize(size_type count, value_type c)
 {
     ensure_capacity(count);
     for (auto i = m_size; i < count; ++i)
@@ -126,7 +124,7 @@ str& str::resize(size_t count, char c)
     return *this;
 }
 
-str& str::insert(size_t index, size_t count, int c)
+str& str::insert(size_type index, size_type count, int c)
 {
     if (!count) [[unlikely]]
         return *this;
@@ -142,13 +140,13 @@ str& str::insert(size_t index, size_t count, int c)
     auto* src = bptr + index;
     auto n = m_size - index + 1;
     std::memmove(dest, src, n);
-    for (size_t i = 0; i < count; ++i)
-        bptr[index + i] = static_cast<char>(c);
+    for (size_type i = 0; i < count; ++i)
+        bptr[index + i] = static_cast<value_type>(c);
     m_size += count;
     return *this;
 }
 
-str& str::insert(size_t index, const str& s)
+str& str::insert(size_type index, const str& s)
 {
     if (!s.m_size) [[unlikely]]
         return *this;
@@ -176,8 +174,8 @@ str& str::remove_newline()
     return *this;
 }
 
-str& str::replace(size_t index, size_t count,
-        size_t count2, char c)
+str& str::replace(size_type index, size_type count,
+        size_type count2, value_type c)
 {
     if (!count || !count2) [[unlikely]]
         return *this;
@@ -187,7 +185,7 @@ str& str::replace(size_t index, size_t count,
     if (count == count2) {
         auto new_size = index + count;
         ensure_capacity(new_size);
-        for (size_t i = 0; i < count; ++i)
+        for (size_type i = 0; i < count; ++i)
             bptr[index + i] = c;
         m_size = std::max(m_size, new_size);
     } else if (count < count2) {
@@ -208,14 +206,14 @@ str& str::replace(size_t index, size_t count,
         m_size = new_size;
         if (dest < bptr + m_size)
             std::memmove(dest, src, n);
-        for (size_t i = 0; i < count2; ++i)
+        for (size_type i = 0; i < count2; ++i)
             bptr[index + i] = c;
     } else {
         // 0 1 2 3 4 5 6 7
         // a a a a a        index = 1, count = 10, count2 = 5
         // a b b b b b
         auto replace = std::min(count, m_size - index);
-        for (size_t i = 0; i < replace; ++i)
+        for (size_type i = 0; i < replace; ++i)
             bptr[index + i] = 0;
 
         if (replace < count2) {
@@ -237,7 +235,7 @@ str& str::replace(size_t index, size_t count,
             m_size -= replace - count2;
         }
 
-        for (size_t i = 0; i < count2; ++i)
+        for (size_type i = 0; i < count2; ++i)
             bptr[index + i] = c;
         bptr[m_size] = 0;
     }
@@ -245,13 +243,12 @@ str& str::replace(size_t index, size_t count,
     return *this;
 }
 
-str& str::erase(size_t index, size_t count)
+str& str::erase(size_type index, size_type count)
 {
     if (index > m_size)
         throw std::out_of_range("accessing index beyond the underlying buffer size");
 
-    if (count == std::numeric_limits<size_t>::max()
-            || index + count >= m_size) {
+    if (count == npos || index + count >= m_size) {
         bptr[index] = 0;
         m_size = index;
         return *this;
@@ -275,21 +272,21 @@ str& str::erase(size_t index, size_t count)
 
 str& str::erase(const_iterator it)
 {
-    auto index = static_cast<size_t>(it - this->begin());
+    auto index = static_cast<size_type>(it - this->begin());
     return this->erase(index, 1);
 }
 
 str& str::erase(const_iterator first, const_iterator last)
 {
-    auto index = static_cast<size_t>(first - this->begin());
-    auto cnt = static_cast<size_t>(last - first);
+    auto index = static_cast<size_type>(first - this->begin());
+    auto cnt = static_cast<size_type>(last - first);
     return this->erase(index, cnt);
 }
 
-static std::vector<size_t> gen_lps(const str& needle)
+static std::vector<str::size_type> gen_lps(const str& needle)
 {
-    auto lps = std::vector<size_t>(needle.size(), 0);
-    size_t i = 0, j = 1;
+    auto lps = std::vector<str::size_type>(needle.size(), 0);
+    str::size_type i = 0, j = 1;
     while (j < needle.size()) {
         if (needle[i] == needle[j]) {
             lps[j++] = ++i;
@@ -303,13 +300,13 @@ static std::vector<size_t> gen_lps(const str& needle)
     return lps;
 }
 
-size_t str::find(const str& needle) const
+str::size_type str::find(const str& needle) const
 {
     if (needle.empty())
         return 0;
 
     auto lps = gen_lps(needle);
-    for (size_t i = 0, j = 0; i < m_size && needle.size() <= m_size;) {
+    for (size_type i = 0, j = 0; i < m_size && needle.size() <= m_size;) {
         for (; j < needle.size() && bptr[i + j] == needle[j]; ++j);
         if (j == needle.size())
             return i;
@@ -321,16 +318,16 @@ size_t str::find(const str& needle) const
                                                 //    prefix too
     }
 
-    return static_cast<size_t>(-1);
+    return static_cast<size_type>(-1);
 }
 
-void str::ensure_capacity(size_t new_size)
+void str::ensure_capacity(size_type new_size)
 {
     if (new_size < m_capacity)
         return;
 
     m_capacity = new_size + 1;
-    auto* new_buf = new char[m_capacity]{};
+    auto* new_buf = new value_type[m_capacity]{};
     std::strcpy(new_buf, bptr);
     if (!std::exchange(sbo, false))
         delete[] bptr;

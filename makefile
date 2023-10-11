@@ -67,9 +67,6 @@ $(MAIN_TEST): $(test_obj)
 clean:
 	$(RM) $(obj)
 
-clean_test:
-	$(RM) $(obj) $(test_obj)
-
 fclean: clean
 	$(RM) $(BIN_DIR)/*
 	find . -type f -name "*.o" -delete

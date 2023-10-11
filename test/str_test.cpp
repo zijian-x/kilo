@@ -380,6 +380,36 @@ TEST_F(str_test, append3)
     }
 }
 
+TEST_F(str_test, append_iter1)
+{
+    auto buf = str();
+    buf.append(begin(s), end(s));
+
+    ASSERT_STREQ(buf.c_str(), s.c_str());
+}
+
+TEST_F(str_test, append_iter2)
+{
+    std::copy(begin(s), end(s), begin(stls));
+
+    ASSERT_EQ(stls.size(), s.size());
+
+    auto buf = str();
+    buf.append(begin(stls), end(stls));
+    ASSERT_STREQ(buf.c_str(), s.c_str());
+    ASSERT_EQ(buf.size(), s.size());
+}
+
+TEST_F(str_test, append_iter3)
+{
+    auto buf = std::string();
+    ASSERT_STREQ(s.c_str(), stls.c_str());
+    buf.append(begin(s), end(s));
+
+    ASSERT_STREQ(buf.c_str(), stls.c_str());
+    ASSERT_EQ(buf.size(), stls.size());
+}
+
 TEST_F(str_test, insert1)
 {
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
@@ -564,11 +594,11 @@ TEST_F(str_test, replace4)
 
 TEST_F(str_test, replace5)
 {
-    const auto* line = "aaaaa";
-    s = line;
-    stls = line;
-    ASSERT_STREQ(s.c_str(), line);
-    ASSERT_EQ(s.size(), std::strlen(line));
+    const auto* buf = "aaaaa";
+    s = buf;
+    stls = buf;
+    ASSERT_STREQ(s.c_str(), buf);
+    ASSERT_EQ(s.size(), std::strlen(buf));
 
     return;
     s.replace(3, 10, 8, 'b');
