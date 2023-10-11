@@ -2,7 +2,7 @@
 #include "draw.hpp"
 #include "editor_state.hpp"
 #include "file_io.hpp"
-#include "keycode.hpp"
+#include "editor_keys.hpp"
 
 #include <format>
 #include <unistd.h>
@@ -60,7 +60,7 @@ static int read_key()
             throw std::runtime_error("error on read()");
     }
 
-    return c == '\x1b' ? read_arrow_key().value_or(c) : c;
+    return c == editor_key::ESCAPE ? read_arrow_key().value_or(c) : c;
 }
 
 str prompt_input(editor_state& ed_state, const str& prompt,
@@ -70,7 +70,7 @@ str prompt_input(editor_state& ed_state, const str& prompt,
 
     for (;;) {
         auto msg = std::format("{}{}", prompt.c_str(), input.c_str());
-        ed_state.status_msg().set_msg(msg.c_str());
+        ed_state.status_msg().set_content(msg.c_str());
         refresh_screen(ed_state);
 
         int c = read_key();
@@ -79,13 +79,13 @@ str prompt_input(editor_state& ed_state, const str& prompt,
                 || c == editor_key::BACKSPACE) {
             if (!input.empty())
                 input.pop_back();
-        } else if (c == '\x1b') {
+        } else if (c == editor_key::ESCAPE) {
             ed_state.status_msg().clear();
             input.clear();
             return input;
         } else if (c == '\r') {
             return input;
-        } else if (!iscntrl('c')) {
+        } else if (!std::iscntrl('c')) {
             input.push_back(static_cast<char>(c));
         }
 
@@ -99,7 +99,7 @@ void process_key_press(editor_state& ed_state)
     static unsigned int quit_times = QUIT_TIMES;
     auto& c_row = ed_state.c_row();
     auto& c_col = ed_state.c_col();
-    const auto& contents = ed_state.content();
+    const auto& rows = ed_state.rows();
 
     auto c = read_key();
     switch (c) {
@@ -110,7 +110,7 @@ void process_key_press(editor_state& ed_state)
             if (ed_state.dirty() && quit_times) {
                 --quit_times;
                 ed_state.status_msg()
-                    .set_msg("File has unsaved changes, press again to quit");
+                    .set_content("File has unsaved changes, press again to quit");
                 return;
             }
             quit_editor();
@@ -129,8 +129,8 @@ void process_key_press(editor_state& ed_state)
             ed_state.delete_char();
             break;
         case ctrl_key('l'):
-        case '\x1b':
-            // ignore refresh key and escape key sequences
+        case editor_key::ESCAPE:
+            // ignore refresh and escape key
             break;
         case editor_key::PAGE_UP:
             c_row = ed_state.rowoff();
@@ -138,7 +138,7 @@ void process_key_press(editor_state& ed_state)
                 ed_state.move_curor(editor_key::UP);
             break;
         case editor_key::PAGE_DOWN:
-            c_row = std::min(contents.size() - 1,
+            c_row = std::min(rows.size() - 1,
                     ed_state.rowoff() + ed_state.screen_row() - 1);
             for (size_t i = ed_state.screen_row(); i > 0; --i)
                 ed_state.move_curor(editor_key::DOWN);
@@ -147,9 +147,9 @@ void process_key_press(editor_state& ed_state)
             c_col = 0;
             break;
         case editor_key::END:
-            if (c_row < contents.size()
-                    && contents[c_row].size())
-                c_col = contents[c_row].size();
+            if (c_row < rows.size()
+                    && rows[c_row].size())
+                c_col = rows[c_row].size();
             break;
         case editor_key::UP:
         case editor_key::DOWN:

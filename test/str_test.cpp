@@ -2,8 +2,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <gtest/gtest.h>
 #include <cstring>
+#include <gtest/gtest.h>
 #include <iterator>
 #include <random>
 #include <string>

@@ -1,5 +1,5 @@
 #include "editor_state.hpp"
-#include "keycode.hpp"
+#include "editor_keys.hpp"
 #include "read_input.hpp"
 
 #include <cstddef>
@@ -24,12 +24,12 @@ void editor_state::move_curor(int c)
                 --m_c_col;
             } else if (m_c_row > 0) {
                 --m_c_row;
-                m_c_col = m_content[m_c_row].size();
+                m_c_col = m_rows[m_c_row].size();
             }
             break;
         case editor_key::RIGHT:
-            if (m_c_row < m_content.size()) {
-                if (m_c_col < m_content[m_c_row].size())
+            if (m_c_row < m_rows.size()) {
+                if (m_c_col < m_rows[m_c_row].size())
                     ++m_c_col;
                 else
                     ++m_c_row, m_c_col = 0;
@@ -40,50 +40,49 @@ void editor_state::move_curor(int c)
                 --m_c_row;
             break;
         case editor_key::DOWN:
-            if (m_c_row < m_content.size())
+            if (m_c_row < m_rows.size())
                 ++m_c_row;
             break;
     }
 
     m_c_col = std::min(m_c_col,
-            m_c_row < m_content.size() ? m_content[m_c_row].size() : 0);
+            m_c_row < m_rows.size() ? m_rows[m_c_row].size() : 0);
 }
 
-std::size_t editor_state::c_col_to_r_col(const str& row, size_t c_col)
+void editor_state::set_r_col()
 {
-    size_t r_col = 0;
-    for (size_t i = 0; i < c_col; ++i) {
+    const auto& row = m_rows[m_c_row];
+    for (size_t i = 0; i < m_c_col; ++i) {
         if (row[i] == '\t')
-            r_col += (TABSTOP - 1) - (r_col % TABSTOP);
-        ++r_col;
+            m_r_col += (TABSTOP - 1) - (m_r_col % TABSTOP);
+        ++m_r_col;
     }
-    return r_col;
 }
 
 void editor_state::insert_char(int c)
 {
-    if (m_c_row == m_content.size())
-        m_content.push_back(str());
+    if (m_c_row == m_rows.size())
+        m_rows.push_back(str());
 
-    m_content[m_c_row].insert(m_c_col++, 1, c);
+    m_rows[m_c_row].insert(m_c_col++, 1, c);
     ++m_dirty;
 }
 
 void editor_state::delete_char()
 {
-    if (m_c_row == m_content.size())
+    if (m_c_row == m_rows.size())
         return;
 
-    auto& current_row = m_content[m_c_row];
+    auto& current_row = m_rows[m_c_row];
     if (m_c_col) {
         current_row.erase(m_c_col - 1, 1);
         --m_c_col;
         ++m_dirty;
     } else if (m_c_row) {
-        auto& prev_row = m_content[m_c_row - 1];
+        auto& prev_row = m_rows[m_c_row - 1];
         m_c_col = prev_row.size();
         prev_row.append(current_row);
-        m_content.erase(begin(m_content) + static_cast<long>(m_c_row));
+        m_rows.erase(begin(m_rows) + static_cast<long>(m_c_row));
         --m_c_row;
         ++m_dirty;
     }
@@ -91,13 +90,13 @@ void editor_state::delete_char()
 
 void editor_state::insert_newline()
 {
-    auto c_row_iter = begin(m_content) + static_cast<ptrdiff_t>(m_c_row);
+    auto c_row_iter = begin(m_rows) + static_cast<ptrdiff_t>(m_c_row);
     if (!m_c_col) {
-        m_content.emplace(c_row_iter, str());
+        m_rows.emplace(c_row_iter, str());
     } else {
         auto new_row = str(c_row_iter->begin() + m_c_col, c_row_iter->end());
         c_row_iter->erase(c_row_iter->begin() + m_c_col, c_row_iter->end());
-        m_content.emplace(c_row_iter + 1, std::move(new_row));
+        m_rows.emplace(c_row_iter + 1, std::move(new_row));
         m_c_col = 0;
     }
     ++m_c_row;
@@ -107,9 +106,9 @@ void editor_state::insert_newline()
 void editor_state::incr_find(const str& query)
 {
     auto i = m_c_row;
-    auto size = m_content.size();
+    auto size = m_rows.size();
     do {
-        if (auto pos = m_content[i].find(query); pos != str::npos) {
+        if (auto pos = m_rows[i].find(query); pos != str::npos) {
             m_c_row = i;
             m_c_col = pos;
             return;
@@ -135,13 +134,13 @@ void editor_state::find()
     m_c_col = cache_col;
     m_rowoff = cache_rowoff;
     m_coloff = cache_coloff;
-    m_status_msg.set_msg("Search aborted");
+    m_status_msg.set_content("Search aborted");
 }
 
 str editor_state::rows_to_string() const
 {
     auto buf = str();
-    for (const auto& line : m_content) {
+    for (const auto& line : m_rows) {
         buf.append(line);
         buf.push_back('\n');
     }
@@ -151,7 +150,7 @@ str editor_state::rows_to_string() const
 
 void quit_editor()
 {
-    write(STDOUT_FILENO, esc_char::CLEAR_SCREEN, 4);
-    write(STDOUT_FILENO, esc_char::CLEAR_CURSOR_POS, 3);
+    write(STDOUT_FILENO, esc_seq::CLEAR_SCREEN, 4);
+    write(STDOUT_FILENO, esc_seq::CLEAR_CURSOR_POS, 3);
     std::exit(0);
 }

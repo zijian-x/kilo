@@ -20,11 +20,16 @@ namespace file
             this->m_filename = filename;
             this->m_fp = fopen(filename, mode);
             if (!m_fp)
-                std::invalid_argument("file not found");
+                throw std::invalid_argument("file not found");
         }
+
+        file_raii(const file_raii&) = delete;
+        file_raii(file_raii&&) = delete;
 
         ~file_raii()
         { fclose(m_fp); }
+
+        file_raii& operator=(file_raii) = delete;
 
         const str& filename() const
         { return this->m_filename; }
@@ -52,7 +57,7 @@ namespace file
         void write_line(const str& line)
         {
             fwrite(line.c_str(), sizeof(char), line.size(), m_fp);
-            if (line.back() != '\r' || line.back() != '\n')
+            if (line.back() != '\r' && line.back() != '\n')
                 fwrite("\n", sizeof(char), 1, m_fp);
         }
 

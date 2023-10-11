@@ -25,28 +25,28 @@ public:
     status_message() = default;
 
     status_message(str msg)
-    { set_msg(std::move(msg)); }
+    { set_content(std::move(msg)); }
 
-    const str& msg() const
-    { return this->m_msg; }
+    const str& content() const
+    { return this->m_content; }
 
     const std::chrono::time_point<std::chrono::system_clock>& timestamp() const
     { return this->m_timestamp; }
 
-    void set_msg(str msg)
+    void set_content(str content)
     {
-        this->m_msg = std::move(msg);
+        this->m_content = std::move(content);
         this->m_timestamp = std::chrono::system_clock::now();
     }
 
     void clear()
     {
-        this->m_msg.clear();
+        this->m_content.clear();
         this->m_timestamp = std::chrono::system_clock::now();
     }
 
 private:
-    str m_msg = DEFAULT_MSG;
+    str m_content = DEFAULT_MSG;
     std::chrono::time_point<std::chrono::system_clock> m_timestamp = std::chrono::system_clock::now(); // wtf man..., i just want to get the time
 };
 
@@ -109,11 +109,11 @@ public:
     const std::size_t& coloff() const
     { return this->m_coloff; }
 
-    std::vector<str>& content()
-    { return this->m_content; }
+    std::vector<str>& rows()
+    { return this->m_rows; }
 
-    const std::vector<str>& content() const
-    { return this->m_content; }
+    const std::vector<str>& rows() const
+    { return this->m_rows; }
 
     status_message& status_msg()
     { return this->m_status_msg; }
@@ -123,7 +123,7 @@ public:
 
     void move_curor(int);
 
-    std::size_t c_col_to_r_col(const str& row, std::size_t);
+    void set_r_col();
 
     void insert_char(int);
 
@@ -142,7 +142,7 @@ private:
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<str> m_content; // TODO replace vector with custom class
+    std::vector<str> m_rows; // TODO replace vector with custom class
     status_message m_status_msg;
 
     void incr_find(const str&);

@@ -15,7 +15,7 @@ namespace file
         ed_state.filename() = fp.filename();
 
         for (auto line = fp.next_line(); line.size(); line = fp.next_line())
-            ed_state.content().push_back(std::move(line.remove_newline()));
+            ed_state.rows().push_back(std::move(line.remove_newline()));
     }
 
     void save_file(editor_state& ed_state)
@@ -23,7 +23,7 @@ namespace file
         if (ed_state.filename().empty()) {
             ed_state.filename() = prompt_input(ed_state, "Save as: ");
             if (ed_state.filename().empty()) {
-                ed_state.status_msg().set_msg("Saving aborted");
+                ed_state.status_msg().set_content("Saving aborted");
                 return;
             }
         }
@@ -35,11 +35,11 @@ namespace file
         auto fd = open(ed_state.filename().c_str(), O_RDWR | O_CREAT, 0644);
         if (fd != -1 && !ftruncate(fd, static_cast<long>(buf.size()))) {
             write(fd, buf.c_str(), buf.size());
-            ed_state.status_msg().set_msg(
+            ed_state.status_msg().set_content(
                     std::format("{} bytes written to disk", buf.size()).c_str());
             ed_state.dirty() = 0;
         } else {
-            ed_state.status_msg().set_msg(
+            ed_state.status_msg().set_content(
                     std::format("Can't save! I/O error: {}", std::strerror(errno)).c_str());
         }
 
