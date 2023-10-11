@@ -2,7 +2,6 @@
 #include <cassert>
 #include <cctype>
 #include <cstddef>
-#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <iterator>
 #include <random>

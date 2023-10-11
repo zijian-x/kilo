@@ -2,7 +2,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <cstring>
 #include <iterator>

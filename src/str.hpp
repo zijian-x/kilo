@@ -1,10 +1,6 @@
 #pragma once
 
-#include <bits/types/struct_itimerspec.h>
-#include <cstddef>
 #include <iterator>
-#include <limits>
-#include <utility>
 
 class str
 {

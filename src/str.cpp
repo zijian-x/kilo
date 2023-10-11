@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <cstring>
-#include <fmt/core.h>
 #include <stdexcept>
 #include <utility>
 
@@ -174,8 +173,7 @@ str& str::remove_newline()
     return *this;
 }
 
-str& str::replace(size_type index, size_type count,
-        size_type count2, value_type c)
+str& str::replace(size_type index, size_type count, size_type count2, value_type c)
 {
     if (!count || !count2) [[unlikely]]
         return *this;

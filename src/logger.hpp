@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fmt/core.h>
+#include <format>
 #include <type_traits>
 
 #include "file_io.hpp"
@@ -15,5 +15,5 @@ static void log(const T& t)
     else if constexpr (std::is_same_v<T, str>)
         logger.write_line(t.c_str());
     else
-        logger.write_line(fmt::format("{}", t).c_str());
+        logger.write_line(std::format("{}", t).c_str());
 }

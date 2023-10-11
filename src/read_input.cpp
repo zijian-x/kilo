@@ -3,8 +3,9 @@
 #include "editor_state.hpp"
 #include "file_io.hpp"
 #include "keycode.hpp"
-#include <fmt/format.h>
-#include <stdexcept>
+
+#include <format>
+#include <unistd.h>
 
 static constexpr int ctrl_key(int c)
 { return c & 0x1f; }
@@ -68,7 +69,7 @@ str prompt_input(editor_state& ed_state, const str& prompt,
     auto input = str();
 
     for (;;) {
-        auto msg = fmt::format("{}{}", prompt.c_str(), input.c_str());
+        auto msg = std::format("{}{}", prompt.c_str(), input.c_str());
         ed_state.status_msg().set_msg(msg.c_str());
         refresh_screen(ed_state);
 

@@ -1,8 +1,9 @@
 #include <algorithm>
 #include <bits/chrono.h>
 #include <chrono>
-#include <fmt/format.h>
+#include <format>
 #include <functional>
+#include <unistd.h>
 
 #include "draw.hpp"
 #include "editor_state.hpp"
@@ -13,7 +14,7 @@ static constexpr const char* KILO_VERS = "0.0.1";
 
 void print_welcome(editor_state& ed_state, str& buf)
 {
-    auto msg = fmt::format("Kilo editor -- version {}", KILO_VERS);
+    auto msg = std::format("Kilo editor -- version {}", KILO_VERS);
     if (msg.size() > ed_state.screen_col())
         return;
 
@@ -46,12 +47,12 @@ void draw_statusbar(editor_state& ed_state, str& buf)
 {
     buf.append(esc_char::INVERT_COLOR);
 
-    auto file_info = str(fmt::format("KILO_EDITOR | {} - {} lines{}",
+    auto file_info = str(std::format("KILO_EDITOR | {} - {} lines{}",
                 (ed_state.filename().size() ?
                  ed_state.filename().c_str() : "[No Name]"),
                 ed_state.content().size(),
                 (ed_state.dirty() ? " [+]" : "")).c_str());
-    auto line_info = str(fmt::format("{}:{}",
+    auto line_info = str(std::format("{}:{}",
                 ed_state.c_row() + 1, ed_state.c_col() + 1).c_str());
 
     file_info.resize(ed_state.screen_col() - line_info.size(), ' ');
@@ -99,7 +100,7 @@ void draw_rows(editor_state& ed_state, str& buf)
 
 void reset_cursor_pos(editor_state& ed_state, str& buf)
 {
-    buf.append(fmt::format("\x1b[{:d};{:d}H",
+    buf.append(std::format("\x1b[{:d};{:d}H",
                 (ed_state.c_row() - ed_state.rowoff() + 1),
                 (ed_state.r_col() - ed_state.coloff() + 1)).c_str());
 }

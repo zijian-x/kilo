@@ -1,5 +1,4 @@
 #include <exception>
-#include <fmt/core.h>
 
 #include "draw.hpp"
 #include "exception_handler.hpp"
