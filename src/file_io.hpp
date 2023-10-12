@@ -4,7 +4,7 @@
 #include <cstring>
 #include <stdio.h>
 
-#include "editor_state.hpp"
+#include "editor.hpp"
 #include "str.hpp"
 
 namespace file
@@ -66,7 +66,7 @@ namespace file
         FILE* m_fp;
     };
 
-    void read_file(editor_state& ed_state, const char* filename);
+    void read_file(editor&, const char*);
 
-    void save_file(editor_state& ed_state);
+    void save_file(editor&);
 }

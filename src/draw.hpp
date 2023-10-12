@@ -1,5 +1,5 @@
 #pragma once
 
-#include "editor_state.hpp"
+#include "editor.hpp"
 
-void refresh_screen(editor_state&);
+void refresh_screen(editor&);

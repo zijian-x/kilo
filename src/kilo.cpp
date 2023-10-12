@@ -6,7 +6,7 @@
 #include "read_input.hpp"
 #include "termios_raii.hpp"
 
-static editor_state ed_state;
+static editor ed;
 
 int main(int argc, char** argv)
 {
@@ -14,11 +14,11 @@ int main(int argc, char** argv)
     std::set_terminate(exception_handler);
 
     if (argc >= 2)
-        file::read_file(ed_state, argv[1]);
+        file::read_file(ed, argv[1]);
 
     for (;;) {
-        refresh_screen(ed_state);
-        process_key_press(ed_state);
+        refresh_screen(ed);
+        process_key_press(ed);
     }
 
     return 0;

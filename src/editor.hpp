@@ -45,10 +45,10 @@ private:
     std::chrono::time_point<std::chrono::system_clock> m_timestamp = std::chrono::system_clock::now(); // wtf man..., i just want to get the time
 };
 
-class editor_state
+class editor
 {
 public:
-    editor_state();
+    editor();
 
     str& filename()
     { return this->m_filename; }

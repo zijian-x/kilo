@@ -1,6 +1,6 @@
 #include "read_input.hpp"
 #include "draw.hpp"
-#include "editor_state.hpp"
+#include "editor.hpp"
 #include "file_io.hpp"
 #include "editor_keys.hpp"
 
@@ -63,22 +63,22 @@ static int read_key()
     return c == editor_key::ESCAPE ? read_arrow_key().value_or(c) : c;
 }
 
-str prompt_input(editor_state& ed_state, const str& prompt,
-        std::optional<std::function<void(editor_state&, const str&, int c)>> callback)
+str prompt_input(editor& ed, const str& prompt,
+        std::optional<std::function<void(editor&, const str&, int c)>> callback)
 {
     auto input = str();
 
     for (;;) {
         auto msg = std::format("{}{}", prompt.c_str(), input.c_str());
-        ed_state.status_msg().set_content(msg.c_str());
-        refresh_screen(ed_state);
+        ed.status_msg().set_content(msg.c_str());
+        refresh_screen(ed);
 
         int key = read_key();
         if (key == editor_key::ESCAPE || key == '\r') {
             if (callback.has_value())
-                callback.value()(ed_state, input, key);
+                callback.value()(ed, input, key);
             if (key == editor_key::ESCAPE) {
-                ed_state.status_msg().clear();
+                ed.status_msg().clear();
                 input.clear();
             }
             return input;
@@ -94,58 +94,58 @@ str prompt_input(editor_state& ed_state, const str& prompt,
         }
 
         if (callback.has_value())
-            callback.value()(ed_state, input, key);
+            callback.value()(ed, input, key);
     }
 }
 
-void process_key_press(editor_state& ed_state)
+void process_key_press(editor& ed)
 {
     static unsigned int quit_times = QUIT_TIMES;
-    auto& c_row = ed_state.c_row();
-    auto& c_col = ed_state.c_col();
-    const auto& rows = ed_state.rows();
+    auto& c_row = ed.c_row();
+    auto& c_col = ed.c_col();
+    const auto& rows = ed.rows();
 
     auto c = read_key();
     switch (c) {
         case '\r':
-            ed_state.insert_newline();
+            ed.insert_newline();
             break;
         case ctrl_key('q'):
-            if (ed_state.dirty() && quit_times) {
+            if (ed.dirty() && quit_times) {
                 --quit_times;
-                ed_state.status_msg()
+                ed.status_msg()
                     .set_content("File has unsaved changes, press again to quit");
                 return;
             }
             quit_editor();
             break;
         case ctrl_key('s'):
-            file::save_file(ed_state);
+            file::save_file(ed);
             break;
         case ctrl_key('f'):
-            ed_state.find();
+            ed.find();
             break;
         case editor_key::BACKSPACE:
         case ctrl_key('h'):
         case editor_key::DEL:
             if (c == editor_key::DEL)
-                ed_state.move_curor(editor_key::RIGHT);
-            ed_state.delete_char();
+                ed.move_curor(editor_key::RIGHT);
+            ed.delete_char();
             break;
         case ctrl_key('l'):
         case editor_key::ESCAPE:
             // ignore refresh and escape key
             break;
         case editor_key::PAGE_UP:
-            c_row = ed_state.rowoff();
-            for (size_t i = ed_state.screen_row(); i > 0; --i)
-                ed_state.move_curor(editor_key::UP);
+            c_row = ed.rowoff();
+            for (size_t i = ed.screen_row(); i > 0; --i)
+                ed.move_curor(editor_key::UP);
             break;
         case editor_key::PAGE_DOWN:
             c_row = std::min(rows.size() - 1,
-                    ed_state.rowoff() + ed_state.screen_row() - 1);
-            for (size_t i = ed_state.screen_row(); i > 0; --i)
-                ed_state.move_curor(editor_key::DOWN);
+                    ed.rowoff() + ed.screen_row() - 1);
+            for (size_t i = ed.screen_row(); i > 0; --i)
+                ed.move_curor(editor_key::DOWN);
             break;
         case editor_key::HOME:
             c_col = 0;
@@ -159,10 +159,10 @@ void process_key_press(editor_state& ed_state)
         case editor_key::DOWN:
         case editor_key::RIGHT:
         case editor_key::LEFT:
-            ed_state.move_curor(c);
+            ed.move_curor(c);
             break;
         default:
-            ed_state.insert_char(c);
+            ed.insert_char(c);
             break;
     }
 

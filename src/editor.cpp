@@ -1,4 +1,4 @@
-#include "editor_state.hpp"
+#include "editor.hpp"
 #include "editor_keys.hpp"
 #include "read_input.hpp"
 
@@ -9,7 +9,7 @@
 
 using namespace char_seq;
 
-editor_state::editor_state()
+editor::editor()
 {
     winsize ws;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_row == 0)
@@ -18,7 +18,7 @@ editor_state::editor_state()
     m_screen_col = ws.ws_col;
 }
 
-void editor_state::move_curor(int c)
+void editor::move_curor(int c)
 {
     switch (c) {
         case editor_key::LEFT:
@@ -51,7 +51,7 @@ void editor_state::move_curor(int c)
             m_c_row < m_rows.size() ? m_rows[m_c_row].size() : 0);
 }
 
-void editor_state::set_r_col()
+void editor::set_r_col()
 {
     m_r_col = 0;
     const auto& row = m_rows[m_c_row];
@@ -62,7 +62,7 @@ void editor_state::set_r_col()
     }
 }
 
-void editor_state::insert_char(int c)
+void editor::insert_char(int c)
 {
     if (m_c_row == m_rows.size())
         m_rows.push_back(str());
@@ -71,7 +71,7 @@ void editor_state::insert_char(int c)
     ++m_dirty;
 }
 
-void editor_state::delete_char()
+void editor::delete_char()
 {
     if (m_c_row == m_rows.size())
         return;
@@ -91,7 +91,7 @@ void editor_state::delete_char()
     }
 }
 
-void editor_state::insert_newline()
+void editor::insert_newline()
 {
     auto c_row_iter = begin(m_rows) + static_cast<ptrdiff_t>(m_c_row);
     if (!m_c_col) {
@@ -106,7 +106,7 @@ void editor_state::insert_newline()
     ++m_dirty;
 }
 
-void editor_state::incr_find(const str& query, int key)
+void editor::incr_find(const str& query, int key)
 {
     enum direction { FORWARD, BACKWARD };
 
@@ -148,14 +148,14 @@ void editor_state::incr_find(const str& query, int key)
     } while (cur_row != m_c_row);
 }
 
-void editor_state::find()
+void editor::find()
 {
     auto cache_row = m_c_row;
     auto cache_col = m_c_col;
     auto cache_rowoff = m_rowoff;
     auto cache_coloff = m_coloff;
-    auto callback = std::function<void(editor_state&, const str&, int)>
-        (&editor_state::incr_find);
+    auto callback = std::function<void(editor&, const str&, int)>
+        (&editor::incr_find);
 
     auto query = prompt_input(*this, "Search: ", callback);
     if (!query.empty())
@@ -168,7 +168,7 @@ void editor_state::find()
     m_status_msg.set_content("Search aborted");
 }
 
-str editor_state::rows_to_string() const
+str editor::rows_to_string() const
 {
     auto buf = str();
     for (const auto& line : m_rows) {
