@@ -131,7 +131,10 @@ void str::reserve(size_type new_size)
     if (new_size < m_capacity)
         return;
 
-    m_capacity = new_size + 1;
+    do {
+        m_capacity <<= 1;
+    } while (m_capacity <= new_size);
+
     auto* new_buf = new value_type[m_capacity]{};
     std::strcpy(new_buf, bptr);
     if (!std::exchange(sbo, false))
