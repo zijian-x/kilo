@@ -106,18 +106,46 @@ void editor_state::insert_newline()
     ++m_dirty;
 }
 
-void editor_state::incr_find(const str& query)
+void editor_state::incr_find(const str& query, int key)
 {
-    auto i = m_c_row;
+    enum direction { FORWARD, BACKWARD };
+
+    static size_t last_match = str::npos;
+    static direction dir = direction::FORWARD;
+
+    if (m_rows.empty())
+        return;
+    if (key == editor_key::ESCAPE || key == '\r') {
+        last_match = str::npos;
+        dir = direction::FORWARD;
+        return;
+    } else if (key == editor_key::UP) {
+        dir = direction::BACKWARD;
+    } else if (key == editor_key::DOWN) {
+        dir = direction::FORWARD;
+    } else {
+        last_match = str::npos;
+        dir = direction::FORWARD;
+    }
+
     auto size = m_rows.size();
+    auto set_next_row = [&size](size_t cur_row, direction dir) {
+        if (dir == direction::FORWARD)
+            cur_row = (cur_row + 1) % size;
+        else
+            cur_row = std::min((cur_row - 1), size);
+        return cur_row;
+    };
+    auto cur_row = set_next_row(m_c_row, dir);
     do {
-        if (auto pos = m_rows[i].find(query); pos != str::npos) {
-            m_c_row = i;
-            m_c_col = pos;
+        if (auto col_pos = m_rows[cur_row].find(query); col_pos != str::npos) {
+            last_match = cur_row;
+            m_c_row = last_match = cur_row;
+            m_c_col = col_pos;
             return;
         }
-        i = (i + 1) % size;
-    } while (i != m_c_row);
+        cur_row = set_next_row(cur_row, dir);
+    } while (cur_row != m_c_row);
 }
 
 void editor_state::find()
@@ -126,7 +154,7 @@ void editor_state::find()
     auto cache_col = m_c_col;
     auto cache_rowoff = m_rowoff;
     auto cache_coloff = m_coloff;
-    auto callback = std::function<void(editor_state&, const str&)>
+    auto callback = std::function<void(editor_state&, const str&, int)>
         (&editor_state::incr_find);
 
     auto query = prompt_input(*this, "Search: ", callback);

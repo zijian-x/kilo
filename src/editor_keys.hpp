@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+static constexpr int EDITOR_KEY_SHIFT = 127;
+
 namespace char_seq
 {
     static constexpr const char* NEW_LINE = "\r\n";
@@ -23,8 +25,7 @@ namespace char_seq
 
 enum editor_key : int
 {
-    ESCAPE = '\x1b',
-    BACKSPACE = 127,
+    BACKSPACE = EDITOR_KEY_SHIFT,
     UP = 1000,
     DOWN,
     LEFT,
@@ -34,6 +35,7 @@ enum editor_key : int
     HOME,
     END,
     DEL,
+    ESCAPE = '\x1b',
 };
 
 enum colors : int

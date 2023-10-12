@@ -64,7 +64,7 @@ static int read_key()
 }
 
 str prompt_input(editor_state& ed_state, const str& prompt,
-        std::optional<std::function<void(editor_state&, const str&)>> callback)
+        std::optional<std::function<void(editor_state&, const str&, int c)>> callback)
 {
     auto input = str();
 
@@ -73,24 +73,28 @@ str prompt_input(editor_state& ed_state, const str& prompt,
         ed_state.status_msg().set_content(msg.c_str());
         refresh_screen(ed_state);
 
-        int c = read_key();
-        if (c == editor_key::DEL
-                || c == ctrl_key('h')
-                || c == editor_key::BACKSPACE) {
+        int key = read_key();
+        if (key == editor_key::ESCAPE || key == '\r') {
+            if (callback.has_value())
+                callback.value()(ed_state, input, key);
+            if (key == editor_key::ESCAPE) {
+                ed_state.status_msg().clear();
+                input.clear();
+            }
+            return input;
+        }
+
+        if (key == editor_key::DEL
+                || key == ctrl_key('h')
+                || key == editor_key::BACKSPACE) {
             if (!input.empty())
                 input.pop_back();
-        } else if (c == editor_key::ESCAPE) {
-            ed_state.status_msg().clear();
-            input.clear();
-            return input;
-        } else if (c == '\r') {
-            return input;
-        } else if (!std::iscntrl('c')) {
-            input.push_back(static_cast<char>(c));
+        } else if (!std::iscntrl(key) && key < EDITOR_KEY_SHIFT) {
+            input.push_back(static_cast<char>(key));
         }
 
         if (callback.has_value())
-            callback.value()(ed_state, input);
+            callback.value()(ed_state, input, key);
     }
 }
 
