@@ -1,9 +1,9 @@
-#include <algorithm>
-#include <bits/chrono.h>
 #include <cctype>
 #include <chrono>
 #include <format>
 #include <functional>
+#include <numeric>
+#include <type_traits>
 #include <unistd.h>
 
 #include "draw.hpp"
@@ -12,6 +12,8 @@
 #include "str.hpp"
 
 static constexpr const char* KILO_VERS = "0.0.1";
+
+using namespace char_seq;
 
 void print_welcome(editor_state& ed_state, str& buf)
 {
@@ -62,7 +64,7 @@ void draw_statusbar(editor_state& ed_state, str& buf)
     buf.append(std::move(line_info));
 
     buf.append(esc_seq::RESET_COLOR);
-    buf.append(char_seq::NEW_LINE);
+    buf.append(NEW_LINE);
 }
 
 str render_row(const str& row)
@@ -87,16 +89,44 @@ str render_row(const str& row)
     return render;
 }
 
+str highlight_render(const str& render)
+{
+    auto hl = str();
+    hl.reserve(render.size());
+    for (size_t i = 0; i < render.size(); ++i) {
+        hl[i] = static_cast<char>
+            ((std::isdigit(render[i]) ? colors::RED :colors::DEFAULT));
+    }
+    return hl;
+}
+
+void pad_hl(char hl, str& buf)
+{
+    char hl_code[16]{};
+    auto len = snprintf(hl_code, sizeof(hl_code), "%c[%dm", editor_key::ESCAPE, hl);
+    hl_code[len] = 0;
+    buf.append(hl_code);
+}
 
 void draw_rows(editor_state& ed_state, str& buf)
 {
+    using std::begin, std::end;
     const auto& rows = ed_state.rows();
     for (size_t i = 0; i < ed_state.screen_row(); ++i) {
-        if (auto file_row = i + ed_state.rowoff(); file_row < rows.size()) {
-            const auto render = render_row(rows[file_row]);
+        if (auto row_idx = i + ed_state.rowoff(); row_idx < rows.size()) {
+            const auto render = render_row(rows[row_idx]);
             auto start_index = std::min(ed_state.coloff(), render.size());
+            auto max_len = std::min(render.size(), ed_state.screen_col());
+            auto hl = highlight_render(render);
 
-            buf.append(render.c_str() + start_index, ed_state.screen_col());
+            int prev_color = colors::DEFAULT;
+            for (size_t j = 0; j < max_len; ++j) {
+                if (hl[j] != prev_color)
+                    pad_hl(hl[j], buf);
+                buf.push_back(render[start_index + j]);
+                prev_color = hl[j];
+            }
+            pad_hl(colors::DEFAULT, buf);
         } else if (!rows.size() && i == ed_state.screen_row() >> 1) {
             print_welcome(ed_state, buf);
         } else {
@@ -104,7 +134,7 @@ void draw_rows(editor_state& ed_state, str& buf)
         }
 
         buf.append(esc_seq::CLEAR_LINE);
-        buf.append(char_seq::NEW_LINE);
+        buf.append(NEW_LINE);
     }
 }
 

@@ -7,6 +7,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+using namespace char_seq;
+
 editor_state::editor_state()
 {
     winsize ws;

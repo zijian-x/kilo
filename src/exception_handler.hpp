@@ -6,6 +6,8 @@
 #include "termios_raii.hpp"
 #include "editor_keys.hpp"
 
+using namespace char_seq;
+
 [[noreturn]] static inline void exception_handler()
 {
     t_ios.disable_raw_mode();
