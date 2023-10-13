@@ -129,14 +129,17 @@ void editor::incr_find(const str& query, int key)
     }
 
     auto size = m_rows.size();
-    auto set_next_row = [&size](size_t cur_row, direction dir) {
+
+    auto set_next_row = [&size](size_t cur_row, size_t last_match, direction dir) {
+        if (last_match == str::npos)
+            return cur_row;
         if (dir == direction::FORWARD)
             cur_row = (cur_row + 1) % size;
         else
             cur_row = std::min((cur_row - 1), size);
         return cur_row;
     };
-    auto cur_row = set_next_row(m_c_row, dir);
+    auto cur_row = set_next_row(m_c_row, last_match, dir);
     do {
         if (auto col_pos = m_rows[cur_row].find(query); col_pos != str::npos) {
             last_match = cur_row;
@@ -144,7 +147,7 @@ void editor::incr_find(const str& query, int key)
             m_c_col = col_pos;
             return;
         }
-        cur_row = set_next_row(cur_row, dir);
+        cur_row = set_next_row(cur_row, last_match, dir);
     } while (cur_row != m_c_row);
 }
 
