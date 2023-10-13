@@ -131,7 +131,7 @@ public:
 
     str& erase(const_iterator, const_iterator);
 
-    size_type find(const str&) const;
+    size_type find(const str&, size_type pos = 0) const;
 
     str& remove_newline();
 

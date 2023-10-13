@@ -317,13 +317,13 @@ static std::vector<str::size_type> gen_lps(const str& needle)
     return lps;
 }
 
-str::size_type str::find(const str& needle) const
+str::size_type str::find(const str& needle, size_type pos) const
 {
     if (needle.empty())
-        return 0;
+        return pos;
 
     auto lps = gen_lps(needle);
-    for (size_type i = 0, j = 0; i < m_size && needle.size() <= m_size;) {
+    for (size_type i = pos, j = 0; i < m_size && needle.size() <= m_size;) {
         for (; j < needle.size() && bptr[i + j] == needle[j]; ++j);
         if (j == needle.size())
             return i;

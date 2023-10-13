@@ -718,6 +718,71 @@ TEST_F(str_test, erase_iter3)
     }
 }
 
+TEST_F(str_test, find_empty_haystack)
+{
+    auto haystack = str();
+    auto needle = str("hello");
+
+    auto stls_haystack = std::string();
+    auto stls_needle = std::string("hello");
+
+    ASSERT_EQ(haystack.find(needle), stls_haystack.find(stls_needle));
+}
+
+TEST_F(str_test, find_empty_haystack_needle)
+{
+    auto haystack = str();
+    auto needle = str();
+
+    auto stls_haystack = std::string();
+    auto stls_needle = std::string();
+
+    ASSERT_EQ(haystack.find(needle), stls_haystack.find(stls_needle));
+}
+
+TEST_F(str_test, find_empty_needle)
+{
+    auto haystack = str(line);
+    auto needle = str();
+
+    auto stls_haystack = std::string(line);
+    auto stls_needle = std::string();
+
+    ASSERT_EQ(haystack.find(needle), stls_haystack.find(stls_needle));
+}
+
+TEST_F(str_test, find_starting_from_pos)
+{
+    auto haystack = str(line);
+    auto needle = str("quid");
+
+    auto stls_haystack = std::string(haystack.c_str());
+    auto stls_needle = std::string(needle.c_str());
+
+    auto rand_pos = std::uniform_int_distribution<size_t>(0, haystack.size() + 100);
+    for (auto i = 0; i < 10000; ++i) {
+        auto pos = rand_pos(mt);
+        ASSERT_EQ(haystack.find(needle, pos), stls_haystack.find(stls_needle, pos));
+    }
+}
+
+TEST_F(str_test, find_longer_needle)
+{
+    auto buf = str(line);
+    buf.append(line);
+    auto haystack = str(line);
+    auto needle = str(buf);
+
+    auto stls_haystack = std::string(haystack.c_str());
+    auto stls_needle = std::string(needle.c_str());
+
+    auto rand_pos = std::uniform_int_distribution<size_t>(0, haystack.size() + 12);
+    for (auto i = 0; i < 10000; ++i) {
+        auto pos = rand_pos(mt);
+        ASSERT_EQ(haystack.find(needle, pos), stls_haystack.find(stls_needle, pos));
+    }
+}
+
 TEST_F(str_test, find1)
 {
     for (char c = 'a'; c <= 'z'; ++c) {
@@ -756,6 +821,37 @@ TEST_F(str_test, find2)
                     << "haystack size: " << haystack.size() << '\n'
                     << "needle size: " << needle.size() << '\n';
                 ASSERT_EQ(needle.find(haystack), stls_needle.find(stls_haystack))
+                    << "haystack size: " << haystack.size() << '\n'
+                    << "needle size: " << needle.size() << '\n';
+            }
+        }
+    }
+}
+
+TEST_F(str_test, find3)
+{
+    auto rand_haystack_size = std::uniform_int_distribution<size_t>(0, 120);
+    auto rand_needle_size = std::uniform_int_distribution<size_t>(0, 100);
+    for (char c = '!'; c <= '~'; ++c) {
+        for (auto i = 0; i < 100; ++i) {
+            auto haystack_size = rand_haystack_size(mt);
+            auto haystack = gen_str('!', c, haystack_size);
+            auto rand_hastack_start_pos = std::uniform_int_distribution<size_t>(0, haystack_size);
+            auto haystack_start_pos = rand_hastack_start_pos(mt);
+            auto stls_haystack = std::string(haystack.c_str());
+
+            for (auto j = 0; j < 20; ++j) {
+                auto needle_size = rand_needle_size(mt);
+                auto needle = gen_str('!', c, needle_size);
+                auto rand_haystack_start_pos = std::uniform_int_distribution<size_t>(0, needle_size);
+                auto needle_start_pos = rand_hastack_start_pos(mt);
+                auto stls_needle = std::string(needle.c_str());
+                ASSERT_EQ(haystack.find(needle, haystack_start_pos),
+                        stls_haystack.find(stls_needle, haystack_start_pos))
+                    << "haystack size: " << haystack.size() << '\n'
+                    << "needle size: " << needle.size() << '\n';
+                ASSERT_EQ(needle.find(haystack, needle_start_pos),
+                        stls_needle.find(stls_haystack, needle_start_pos))
                     << "haystack size: " << haystack.size() << '\n'
                     << "needle size: " << needle.size() << '\n';
             }
