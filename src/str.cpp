@@ -1,5 +1,6 @@
 #include "str.hpp"
 
+#include <iterator>
 #include <vector>
 #include <cstring>
 #include <stdexcept>
@@ -300,12 +301,16 @@ str& str::erase(const_iterator first, const_iterator last)
     return this->erase(index, cnt);
 }
 
-static std::vector<str::size_type> gen_lps(const str& needle)
+template<typename iter>
+static std::vector<str::size_type> gen_lps(iter begin, iter end)
 {
-    auto lps = std::vector<str::size_type>(needle.size(), 0);
+    str::size_type size = static_cast<str::size_type>(std::distance(begin, end));
+    auto lps = std::vector<str::size_type>(size, 0);
+
     str::size_type i = 0, j = 1;
-    while (j < needle.size()) {
-        if (needle[i] == needle[j]) {
+
+    while (begin + j != end) {
+        if (*(begin + i) == *(begin + j)) {
             lps[j++] = ++i;
         } else {
             if (!i)
@@ -317,6 +322,25 @@ static std::vector<str::size_type> gen_lps(const str& needle)
     return lps;
 }
 
+template<typename iter>
+static str::size_type kmp(str::size_type pos, iter h_begin, iter h_end,
+        iter n_begin, iter n_end, const std::vector<str::size_type>& lps)
+{
+    auto n_size = std::distance(n_begin, n_end);
+    for (str::size_type j = 0; h_begin + pos + n_size - 1 < h_end;) {
+        for (; n_begin + j < n_end && *(h_begin + pos + j) == *(n_begin + j); ++j);
+        if (n_begin + j == n_end)
+            return pos;
+
+        auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
+                                                //    substr len
+        pos += skip;                              // 2: skip the substr len
+        j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
+                                                //    prefix too
+    }
+    return str::npos;
+}
+
 str::size_type str::find(const str& needle, size_type pos) const
 {
     if (needle.empty())
@@ -324,18 +348,36 @@ str::size_type str::find(const str& needle, size_type pos) const
     if (needle.size() > m_size)
         return npos;
 
-    auto lps = gen_lps(needle);
-    for (size_type i = pos, j = 0; i < m_size;) {
-        for (; j < needle.size() && bptr[i + j] == needle[j]; ++j);
-        if (j == needle.size())
-            return i;
+    using std::begin, std::end;
+    const auto lps = gen_lps(begin(needle), end(needle));
+    auto h_begin = begin(*this);
+    auto h_end = end(*this);
+    auto n_begin = begin(needle);
+    auto n_end = end(needle);
 
-        auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
-                                                //    substr len
-        i += skip;                              // 2: skip the substr len
-        j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
-                                                //    prefix too
-    }
+    return kmp(pos, h_begin, h_end, n_begin, n_end, lps);
+}
 
-    return npos;
+str::size_type str::rfind(const str& needle, size_type pos) const
+{
+    if (needle.empty())
+        return std::min(m_size, pos);
+    if (needle.size() > m_size)
+        return npos;
+
+    using std::rbegin, std::rend;
+    const auto lps = gen_lps(rbegin(needle), rend(needle));
+
+    size_t rpos = 0;
+    if (m_size - needle.size() >= pos)
+        rpos = m_size - needle.size() - pos;
+    auto h_rbegin = rbegin(*this);
+    auto h_rend = rend(*this);
+    auto n_rbegin = rbegin(needle);
+    auto n_rend = rend(needle);
+
+    auto res = kmp(rpos, h_rbegin, h_rend, n_rbegin, n_rend, lps);
+    if (res != npos)
+        res = m_size - needle.size() - res;
+    return res;
 }

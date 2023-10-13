@@ -153,6 +153,8 @@ public:
 
     size_type find(const str&, size_type pos = 0) const;
 
+    size_type rfind(const str&, size_type pos = npos) const;
+
     str& remove_newline();
 
 private:
