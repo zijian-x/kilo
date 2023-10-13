@@ -321,19 +321,21 @@ str::size_type str::find(const str& needle, size_type pos) const
 {
     if (needle.empty())
         return pos;
+    if (needle.size() > m_size)
+        return npos;
 
     auto lps = gen_lps(needle);
-    for (size_type i = pos, j = 0; i < m_size && needle.size() <= m_size;) {
+    for (size_type i = pos, j = 0; i < m_size;) {
         for (; j < needle.size() && bptr[i + j] == needle[j]; ++j);
         if (j == needle.size())
             return i;
 
         auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
-                                                //    substr
-        i += skip;                              // 2: skip the lps
+                                                //    substr len
+        i += skip;                              // 2: skip the substr len
         j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
                                                 //    prefix too
     }
 
-    return str::npos;
+    return npos;
 }

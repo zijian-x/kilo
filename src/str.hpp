@@ -15,6 +15,8 @@ public:
     using iterator_category = std::contiguous_iterator_tag;
     using iterator = pointer;
     using const_iterator = const_pointer;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     static constexpr size_type npos = static_cast<size_type>(-1);
 
@@ -89,10 +91,28 @@ public:
     { return const_iterator(&bptr[m_size]); }
 
     const_iterator cbegin() const
-    { return const_iterator(&bptr[0]); }
+    { return begin(); }
 
     const_iterator cend() const
-    { return const_iterator(&bptr[0]); }
+    { return end(); }
+
+    reverse_iterator rbegin()
+    { return std::make_reverse_iterator(this->end()); }
+
+    reverse_iterator rend()
+    { return std::make_reverse_iterator(this->begin()); }
+
+    const_reverse_iterator rbegin() const
+    { return std::make_reverse_iterator(this->end()); }
+
+    const_reverse_iterator rend() const
+    { return std::make_reverse_iterator(this->begin()); }
+
+    const_reverse_iterator crbegin() const
+    { return rbegin(); }
+
+    const_reverse_iterator crend() const
+    { return rend(); }
 
     void push_back(value_type);
 
@@ -140,7 +160,7 @@ private:
     size_type m_capacity{SBO_SIZE};
     size_type m_size{0};
     union {
-        value_type smb[15]{};
+        value_type smb[SBO_SIZE]{};
         value_type* dynb;
     };
     bool sbo{true};

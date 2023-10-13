@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -54,6 +55,17 @@ protected:
         return ret;
     }
 };
+
+TEST_F(str_test, sbo_to_dyn)
+{
+    return;
+    auto s1 = str();
+    for (auto i = 0; i < 15; ++i) {
+        s1.push_back('c');
+        fmt::println("s1.size: {}", s1.size());
+        fmt::println("s1.capacity: {}", s1.capacity());
+    }
+}
 
 TEST_F(str_test, default_ctor)
 {

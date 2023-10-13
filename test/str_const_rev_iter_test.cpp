@@ -11,7 +11,7 @@
 
 using std::cbegin, std::cend;
 
-class str_const_iter_test : public ::testing::Test
+class str_const_rev_iter_test : public ::testing::Test
 {
 protected:
     const char* line = "Lorem ipsum dolor sit amet, consectetur:"
@@ -40,14 +40,7 @@ protected:
     }
 };
 
-TEST_F(str_const_iter_test, range_based_for_read)
-{
-    size_t i = 0;
-    for (auto c : s)
-        ASSERT_EQ(c, stls[i++]);
-}
-
-TEST_F(str_const_iter_test, iter_copy)
+TEST_F(str_const_rev_iter_test, iter_copy)
 {
     size_t i = 0;
     for (auto it = cbegin(s); it != cend(s); ++it) {
@@ -57,7 +50,7 @@ TEST_F(str_const_iter_test, iter_copy)
     }
 }
 
-TEST_F(str_const_iter_test, ordering_less)
+TEST_F(str_const_rev_iter_test, ordering_less)
 {
     auto it = cbegin(s);
     auto rand_diff = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -70,7 +63,7 @@ TEST_F(str_const_iter_test, ordering_less)
     }
 }
 
-TEST_F(str_const_iter_test, ordering_less_eq)
+TEST_F(str_const_rev_iter_test, ordering_less_eq)
 {
     auto it = cbegin(s);
     auto rand_diff = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -83,7 +76,7 @@ TEST_F(str_const_iter_test, ordering_less_eq)
     }
 }
 
-TEST_F(str_const_iter_test, ordering_eq)
+TEST_F(str_const_rev_iter_test, ordering_eq)
 {
     auto it = cbegin(s);
     auto rand_diff = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -96,7 +89,7 @@ TEST_F(str_const_iter_test, ordering_eq)
     }
 }
 
-TEST_F(str_const_iter_test, ordering_eq_greater)
+TEST_F(str_const_rev_iter_test, ordering_eq_greater)
 {
     auto it = cbegin(s);
     auto rand_diff = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -109,7 +102,7 @@ TEST_F(str_const_iter_test, ordering_eq_greater)
     }
 }
 
-TEST_F(str_const_iter_test, greater)
+TEST_F(str_const_rev_iter_test, greater)
 {
     auto it = cbegin(s);
     auto rand_diff = std::uniform_int_distribution<ptrdiff_t>(0,
@@ -122,7 +115,7 @@ TEST_F(str_const_iter_test, greater)
     }
 }
 
-TEST_F(str_const_iter_test, random_access_read)
+TEST_F(str_const_rev_iter_test, random_access_read)
 {
     auto it = std::cbegin(s);
     auto cmp_it = std::cbegin(stls);
@@ -136,8 +129,7 @@ TEST_F(str_const_iter_test, random_access_read)
     }
 }
 
-/*
-TEST_F(str_const_iter_test, stl_find)
+TEST_F(str_const_rev_iter_test, stl_find)
 {
     auto rand_c = std::uniform_int_distribution<char>('a', 'z');
 
@@ -145,13 +137,12 @@ TEST_F(str_const_iter_test, stl_find)
         auto c = rand_c(mt);
 
         auto res1 = std::find(cbegin(s), cend(s), c) == cend(s);
-        auto res2 = std::find(cbegin(cmp), cend(cmp), c) == cend(cmp);
+        auto res2 = std::find(cbegin(stls), cend(stls), c) == cend(stls);
         ASSERT_EQ(res1, res2);
     }
 }
-*/
 
-TEST_F(str_const_iter_test, stl_count)
+TEST_F(str_const_rev_iter_test, stl_count)
 {
     for (size_t i = 0; i < s.size(); ++i) {
         auto cnt1 = std::count(cbegin(s), cend(s), s[i]);
@@ -163,7 +154,7 @@ TEST_F(str_const_iter_test, stl_count)
     auto it2 = cbegin(s);
 }
 
-TEST_F(str_const_iter_test, stl_distance)
+TEST_F(str_const_rev_iter_test, stl_distance)
 {
     auto rand_idx = std::uniform_int_distribution<ptrdiff_t>(0,
             static_cast<long>(s.size()));
