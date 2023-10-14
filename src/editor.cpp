@@ -108,47 +108,39 @@ void editor::insert_newline()
 
 void editor::incr_find(const str& query, int key)
 {
-    enum direction { FORWARD, BACKWARD };
-
     static size_t last_match = str::npos;
-    static direction dir = direction::FORWARD;
+    static int direction = 1;
 
     if (m_rows.empty())
         return;
     if (key == editor_key::ESCAPE || key == '\r') {
         last_match = str::npos;
-        dir = direction::FORWARD;
+        direction = 1;
         return;
     } else if (key == editor_key::UP) {
-        dir = direction::BACKWARD;
+        direction = -1;
     } else if (key == editor_key::DOWN) {
-        dir = direction::FORWARD;
+        direction = 1;
     } else {
         last_match = str::npos;
-        dir = direction::FORWARD;
+        direction = 1;
     }
 
-    auto size = m_rows.size();
+    auto current = last_match;
+    for (size_t i = 0; i < m_rows.size(); ++i) {
+        current += direction;
+        if (current == m_rows.size())
+            current = 0;
+        if (current == str::npos)
+            current = m_rows.size() - 1;
 
-    auto set_next_row = [&size](size_t cur_row, size_t last_match, direction dir) {
-        if (last_match == str::npos)
-            return cur_row;
-        if (dir == direction::FORWARD)
-            cur_row = (cur_row + 1) % size;
-        else
-            cur_row = std::min((cur_row - 1), size);
-        return cur_row;
-    };
-    auto cur_row = set_next_row(m_c_row, last_match, dir);
-    do {
-        if (auto col_pos = m_rows[cur_row].find(query); col_pos != str::npos) {
-            last_match = cur_row;
-            m_c_row = last_match = cur_row;
-            m_c_col = col_pos;
+        const auto& cur_row = m_rows[current];
+        if (auto pos = cur_row.find(query); pos != str::npos) {
+            m_c_row = last_match = current;
+            m_c_col = pos;
             return;
         }
-        cur_row = set_next_row(cur_row, last_match, dir);
-    } while (cur_row != m_c_row);
+    }
 }
 
 void editor::find()

@@ -137,7 +137,7 @@ private:
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<str> m_rows; // TODO replace vector with custom class
+    std::vector<str> m_rows;
     status_message m_status_msg;
 
     void incr_find(const str&, int);
