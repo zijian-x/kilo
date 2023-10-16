@@ -41,6 +41,9 @@ run: compile
 runf: compile
 	./$(MAIN) file
 
+runm: compile
+	./$(MAIN) makefile
+
 debug: CXXFLAGS += -g
 
 debug: fclean compile

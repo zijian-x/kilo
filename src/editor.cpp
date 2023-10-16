@@ -36,7 +36,7 @@ void editor_row::hl_content()
     for (size_t i = 0; i < m_render.size(); ++i) {
         auto color = colors::DEFAULT;
         if (std::isdigit(m_render[i]))
-            color = colors::RED;
+            color = colors::CYAN;
         m_hl[i] = static_cast<char>(color);
     }
 }
@@ -167,6 +167,12 @@ void editor::incr_find(const str& query, int key)
     static size_t last_match_col = str::npos;
     static int direction = 1;
 
+    static size_t cached_hl_row = str::npos;
+    if (cached_hl_row != str::npos) {
+        m_rows[cached_hl_row].upd_row();
+        cached_hl_row = str::npos;
+    }
+
     if (m_rows.empty())
         return;
     if (key == editor_key::ESCAPE || key == '\r') {
@@ -197,11 +203,13 @@ void editor::incr_find(const str& query, int key)
             cur_col = 0;
         }
 
-        const auto& row = m_rows[cur_row];
+        auto& row = m_rows[cur_row];
         if (direction == 1) {
-            if (auto pos = row.content().find(query, cur_col); pos != str::npos) {
+            if (auto pos = row.render().find(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;
+                row.hl().replace(pos, query.size(), query.size(), colors::RED);
+                cached_hl_row = cur_row;
                 return;
             } else {
                 cur_row = (cur_row + 1) % m_rows.size();
@@ -209,9 +217,11 @@ void editor::incr_find(const str& query, int key)
             }
         }
         if (direction == -1) {
-            if (auto pos = row.content().rfind(query, cur_col); pos != str::npos) {
+            if (auto pos = row.render().rfind(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;
+                row.hl().replace(pos, query.size(), query.size(), colors::RED);
+                cached_hl_row = cur_row;
                 return;
             } else {
                 cur_row = std::min(cur_row - 1, m_rows.size() - 1);
