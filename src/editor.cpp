@@ -9,6 +9,60 @@
 
 using namespace char_seq;
 
+editor_row::editor_row(const str& s) : m_content{s}
+{ upd_row(); }
+
+editor_row::editor_row(str&& s) : m_content{s}
+{ upd_row(); }
+
+void editor_row::upd_row()
+{
+    render_content();
+    hl_content();
+}
+
+void editor_row::render_content()
+{
+    m_render = m_content;
+    for (size_t i = 0; i < m_render.size(); ++i) {
+        if (m_content[i] == '\t')
+            m_render.replace(i, 1, TABSTOP, ' ');
+    }
+}
+
+void editor_row::hl_content()
+{
+    m_hl.resize(m_render.size(), colors::DEFAULT);
+    for (size_t i = 0; i < m_render.size(); ++i) {
+        auto color = colors::DEFAULT;
+        if (std::isdigit(m_render[i]))
+            color = colors::RED;
+        m_hl[i] = static_cast<char>(color);
+    }
+}
+
+void editor_row::insert(str::size_type index, str::size_type count, int c)
+{
+    m_content.insert(index, count, c);
+    m_render.insert(index, count, c);
+    upd_row();
+}
+
+void editor_row::erase(str::size_type index, str::size_type count)
+{
+    m_content.erase(index, count);
+    m_render.erase(index, count);
+    upd_row();
+}
+
+void editor_row::append(const editor_row& row)
+{
+    m_content.append(row.content());
+    m_render.append(row.content());
+    upd_row();
+}
+
+
 editor::editor()
 {
     winsize ws;
@@ -56,7 +110,7 @@ void editor::set_r_col()
     m_r_col = 0;
     const auto& row = m_rows[m_c_row];
     for (size_t i = 0; i < m_c_col; ++i) {
-        if (row[i] == '\t')
+        if (row.content()[i] == '\t')
             m_r_col += (TABSTOP - 1) - (m_r_col % TABSTOP);
         ++m_r_col;
     }
@@ -83,7 +137,7 @@ void editor::delete_char()
         ++m_dirty;
     } else if (m_c_row) {
         auto& prev_row = m_rows[m_c_row - 1];
-        m_c_col = prev_row.size();
+        m_c_col = prev_row.content().size();
         prev_row.append(current_row);
         m_rows.erase(begin(m_rows) + static_cast<long>(m_c_row));
         --m_c_row;
@@ -97,8 +151,9 @@ void editor::insert_newline()
     if (!m_c_col) {
         m_rows.emplace(c_row_iter, str());
     } else {
-        auto new_row = str(c_row_iter->begin() + m_c_col, c_row_iter->end());
-        c_row_iter->erase(c_row_iter->begin() + m_c_col, c_row_iter->end());
+        auto new_row = str(c_row_iter->content().begin() + m_c_col, c_row_iter->content().end());
+        c_row_iter->content().erase(c_row_iter->content().begin() + m_c_col, c_row_iter->content().end());
+        c_row_iter->upd_row();
         m_rows.emplace(c_row_iter + 1, std::move(new_row));
         m_c_col = 0;
     }
@@ -144,7 +199,7 @@ void editor::incr_find(const str& query, int key)
 
         const auto& row = m_rows[cur_row];
         if (direction == 1) {
-            if (auto pos = row.find(query, cur_col); pos != str::npos) {
+            if (auto pos = row.content().find(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;
                 return;
@@ -154,7 +209,7 @@ void editor::incr_find(const str& query, int key)
             }
         }
         if (direction == -1) {
-            if (auto pos = row.rfind(query, cur_col); pos != str::npos) {
+            if (auto pos = row.content().rfind(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;
                 return;
@@ -190,7 +245,7 @@ str editor::rows_to_string() const
 {
     auto buf = str();
     for (const auto& line : m_rows) {
-        buf.append(line);
+        buf.append(line.content());
         buf.push_back('\n');
     }
 

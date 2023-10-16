@@ -112,10 +112,10 @@ void pad_hl(char hl, str& buf)
 void draw_rows(editor& ed, str& buf)
 {
     using std::begin, std::end;
-    const auto& rows = ed.rows();
     for (size_t i = 0; i < ed.screen_row(); ++i) {
-        if (auto row_idx = i + ed.rowoff(); row_idx < rows.size()) {
-            const auto render = render_row(rows[row_idx]);
+        if (auto row_idx = i + ed.rowoff(); row_idx < ed.rows().size()) {
+            const auto& row = ed.rows()[row_idx];
+            const auto& render = row.render();
             auto start_index = std::min(ed.coloff(), render.size());
 
             auto max_len = std::min(render.size() - start_index, ed.screen_col());
@@ -128,7 +128,7 @@ void draw_rows(editor& ed, str& buf)
                 prev_color = hl[start_index + j];
             }
             pad_hl(colors::DEFAULT, buf);
-        } else if (rows.empty() && i == ed.screen_row() >> 1) {
+        } else if (ed.rows().empty() && i == ed.screen_row() >> 1) {
             print_welcome(ed, buf);
         } else {
             buf.push_back('~');

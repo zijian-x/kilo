@@ -14,6 +14,53 @@ static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save"
                                            " | CTRL-Q = Quit"
                                            " | CTRL-F = Find";
 
+class editor_row
+{
+public:
+    editor_row() = default;
+
+    editor_row(const str& s);
+
+    editor_row(str&& s);
+
+    const str& content() const
+    { return this->m_content; }
+
+    str& content()
+    { return this->m_content; }
+
+    const str& render() const
+    { return this->m_render; }
+
+    str& render()
+    { return this->m_render; }
+
+    const str& hl() const
+    { return this->m_hl; }
+
+    str& hl()
+    { return this->m_hl; }
+
+    str::size_type size() const
+    { return m_content.size(); }
+
+    void insert(str::size_type, str::size_type, int);
+
+    void erase(str::size_type, str::size_type);
+
+    void append(const editor_row&);
+
+    void upd_row();
+
+private:
+    str m_content;
+    str m_render;
+    str m_hl;
+
+    void render_content();
+    void hl_content();
+};
+
 class status_message
 {
 public:
@@ -104,10 +151,10 @@ public:
     const std::size_t& coloff() const
     { return this->m_coloff; }
 
-    std::vector<str>& rows()
+    std::vector<editor_row>& rows()
     { return this->m_rows; }
 
-    const std::vector<str>& rows() const
+    const std::vector<editor_row>& rows() const
     { return this->m_rows; }
 
     status_message& status_msg()
@@ -137,7 +184,7 @@ private:
     std::size_t m_screen_row{}, m_screen_col{};
     std::size_t m_c_row{}, m_c_col{}, m_r_col{};
     std::size_t m_rowoff{}, m_coloff{};
-    std::vector<str> m_rows;
+    std::vector<editor_row> m_rows;
     status_message m_status_msg;
 
     void incr_find(const str&, int);
