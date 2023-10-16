@@ -730,6 +730,28 @@ TEST_F(str_test, erase_iter3)
     }
 }
 
+TEST_F(str_test, find_iterate)
+{
+    const auto* line = "hello, hello, world";
+    auto s = str(line);
+    auto stls = std::string(line);
+    size_t pos = 0;
+    size_t stls_pos = 0;
+    for (size_t i = 0; i < 3; ++i) {
+        pos = s.find("hello", pos) + 1;
+        stls_pos = stls.find("hello", stls_pos) + 1;
+        ASSERT_EQ(pos, stls_pos);
+    }
+
+    pos = 0;
+    stls_pos = 0;
+    for (size_t i = 0; i < 3; ++i) {
+        pos = s.find("world", pos) + 1;
+        stls_pos = stls.find("world", stls_pos) + 1;
+        ASSERT_EQ(pos, stls_pos);
+    }
+}
+
 TEST_F(str_test, find_empty_haystack)
 {
     auto haystack = str();

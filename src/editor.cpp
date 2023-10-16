@@ -108,13 +108,15 @@ void editor::insert_newline()
 
 void editor::incr_find(const str& query, int key)
 {
-    static size_t last_match = str::npos;
+    static size_t last_match_row = 0;
+    static size_t last_match_col = str::npos;
     static int direction = 1;
 
     if (m_rows.empty())
         return;
     if (key == editor_key::ESCAPE || key == '\r') {
-        last_match = str::npos;
+        last_match_row = 0;
+        last_match_col = str::npos;
         direction = 1;
         return;
     } else if (key == editor_key::UP) {
@@ -122,25 +124,46 @@ void editor::incr_find(const str& query, int key)
     } else if (key == editor_key::DOWN) {
         direction = 1;
     } else {
-        last_match = str::npos;
+        last_match_row = 0;
+        last_match_col = str::npos;
         direction = 1;
     }
 
-    auto current = last_match;
-    for (size_t i = 0; i < m_rows.size(); ++i) {
-        current += direction;
-        if (current == m_rows.size())
-            current = 0;
-        if (current == str::npos)
-            current = m_rows.size() - 1;
-
-        const auto& cur_row = m_rows[current];
-        if (auto pos = cur_row.find(query); pos != str::npos) {
-            m_c_row = last_match = current;
-            m_c_col = pos;
-            return;
+    auto cur_row = last_match_row;
+    auto cur_col = last_match_col;
+    do {
+        cur_col += direction;
+        if (cur_col == m_rows[cur_row].size()) {
+            cur_row = (cur_row + 1) % m_rows.size();
+            cur_col = 0;
         }
-    }
+        if (cur_col == str::npos) {
+            cur_row = std::min(cur_row - 1, m_rows.size() - 1);
+            cur_col = 0;
+        }
+
+        const auto& row = m_rows[cur_row];
+        if (direction == 1) {
+            if (auto pos = row.find(query, cur_col); pos != str::npos) {
+                m_c_row = last_match_row = cur_row;
+                m_c_col = last_match_col = pos;
+                return;
+            } else {
+                cur_row = (cur_row + 1) % m_rows.size();
+                cur_col = str::npos;
+            }
+        }
+        if (direction == -1) {
+            if (auto pos = row.rfind(query, cur_col); pos != str::npos) {
+                m_c_row = last_match_row = cur_row;
+                m_c_col = last_match_col = pos;
+                return;
+            } else {
+                cur_row = std::min(cur_row - 1, m_rows.size() - 1);
+                cur_col = m_rows[cur_row].size();
+            }
+        }
+    } while (cur_row != last_match_row);
 }
 
 void editor::find()
