@@ -33,9 +33,10 @@ void editor_row::render_content()
 
 void editor_row::hl_content()
 {
-    auto is_sep = [](int c) {
-        // TODO
-        // return isspace(c) || c == '\0' || str(",.()+-/*=~%<>[];").find(c) != str::npos;
+    auto is_sep = [](char c) {
+        return isspace(c)
+            || c == '\0'
+            || str(",.()+-/*=~%<>[];").find(c) != str::npos;
     };
     m_hl.resize(m_render.size(), colors::DEFAULT);
     for (size_t i = 0; i < m_render.size(); ++i) {
@@ -168,9 +169,10 @@ void editor::insert_newline()
 
 void editor::incr_find(const str& query, int key)
 {
+    enum class direction { FORWARD, BACKWARD };
     static size_t last_match_row = 0;
     static size_t last_match_col = str::npos;
-    static int direction = 1;
+    static direction dir = direction::FORWARD;
 
     static size_t cached_hl_row = str::npos;
     if (cached_hl_row != str::npos) {
@@ -183,22 +185,29 @@ void editor::incr_find(const str& query, int key)
     if (key == editor_key::ESCAPE || key == '\r') {
         last_match_row = 0;
         last_match_col = str::npos;
-        direction = 1;
+        dir = direction::FORWARD;
         return;
     } else if (key == editor_key::UP) {
-        direction = -1;
+        dir = direction::BACKWARD;
     } else if (key == editor_key::DOWN) {
-        direction = 1;
+        dir = direction::FORWARD;
     } else {
         last_match_row = 0;
         last_match_col = str::npos;
-        direction = 1;
+        dir = direction::FORWARD;
     }
 
     auto cur_row = last_match_row;
     auto cur_col = last_match_col;
     do {
-        cur_col += direction;
+        switch (dir) {
+            case direction::FORWARD:
+                cur_col += 1;
+                break;
+            case direction::BACKWARD:
+                cur_col -= 1;
+                break;
+        }
         if (cur_col == m_rows[cur_row].size()) {
             cur_row = (cur_row + 1) % m_rows.size();
             cur_col = 0;
@@ -209,7 +218,7 @@ void editor::incr_find(const str& query, int key)
         }
 
         auto& row = m_rows[cur_row];
-        if (direction == 1) {
+        if (dir == direction::FORWARD) {
             if (auto pos = row.render().find(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;
@@ -221,7 +230,7 @@ void editor::incr_find(const str& query, int key)
                 cur_col = str::npos;
             }
         }
-        if (direction == -1) {
+        if (dir == direction::BACKWARD) {
             if (auto pos = row.render().rfind(query, cur_col); pos != str::npos) {
                 m_c_row = last_match_row = cur_row;
                 m_c_col = last_match_col = pos;

@@ -21,7 +21,7 @@ LIB := -lfmt
 SAN := -fsanitize=address,undefined
 LDFLAGS := $(SAN) $(LIB)
 
-TEST_ARGUMENTS := --gtest_filter=str_test.find_char*
+TEST_ARGUMENTS := --gtest_filter=*
 
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
