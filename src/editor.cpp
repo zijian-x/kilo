@@ -1,3 +1,4 @@
+#include "str.hpp"
 #include "editor.hpp"
 #include "editor_keys.hpp"
 #include "read_input.hpp"
@@ -32,6 +33,10 @@ void editor_row::render_content()
 
 void editor_row::hl_content()
 {
+    auto is_sep = [](int c) {
+        // TODO
+        // return isspace(c) || c == '\0' || str(",.()+-/*=~%<>[];").find(c) != str::npos;
+    };
     m_hl.resize(m_render.size(), colors::DEFAULT);
     for (size_t i = 0; i < m_render.size(); ++i) {
         auto color = colors::DEFAULT;

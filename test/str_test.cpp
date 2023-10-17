@@ -32,6 +32,7 @@ protected:
     str s;
     std::string stls;
     std::mt19937 mt{};
+    std::uniform_int_distribution<char> rand_char{'!', '~'};
 
     void SetUp() override
     {
@@ -580,7 +581,6 @@ TEST_F(str_test, replace3)
     stls = std::string(line);
     auto dis = std::uniform_int_distribution<size_t>{1, 10};
     auto extra_count_dis = dis;
-    auto rand_char = std::uniform_int_distribution<char>{'a', 'z'};
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         auto cnt = dis(mt);
         auto extra = extra_count_dis(mt);
@@ -626,7 +626,6 @@ TEST_F(str_test, replace6)
     stls = std::string(line);
     auto dis = std::uniform_int_distribution<size_t>{1, 10};
     auto extra_count_dis = dis;
-    auto rand_char = std::uniform_int_distribution<char>{'a', 'z'};
     for (size_t i = 0, len = std::strlen(line); i < len; ++i) {
         auto cnt = dis(mt);
         auto extra = extra_count_dis(mt);
@@ -1039,5 +1038,25 @@ TEST_F(str_test, rfind_rand3)
                     << "needle start pos: " << needle_start_pos << '\n';
             }
         }
+    }
+}
+
+TEST_F(str_test, find_char1)
+{
+    for (auto i = 0; i < 10000; ++i) {
+        auto c = rand_char(mt);
+        ASSERT_EQ(s.find(c), stls.find(c));
+        ASSERT_EQ(s.rfind(c), stls.rfind(c));
+    }
+}
+
+TEST_F(str_test, find_char2)
+{
+    auto rand_idx = std::uniform_int_distribution<size_t>(0, s.size() - 1);
+    for (auto i = 0; i < 10000; ++i) {
+        auto c = rand_char(mt);
+        auto idx = rand_idx(mt);
+        ASSERT_EQ(s.find(c, idx), stls.find(c, idx));
+        ASSERT_EQ(s.rfind(c, idx), stls.rfind(c, idx));
     }
 }

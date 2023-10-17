@@ -21,7 +21,7 @@ LIB := -lfmt
 SAN := -fsanitize=address,undefined
 LDFLAGS := $(SAN) $(LIB)
 
-TEST_ARGUMENTS := --gtest_filter=*
+TEST_ARGUMENTS := --gtest_filter=str_test.find_char*
 
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
@@ -31,22 +31,22 @@ test_src := $(shell find $(TEST_DIR) -type f -name "*.cpp") \
 	    $(test_header:.hpp=.cpp)
 test_obj := $(test_src:.cpp=.o)
 
-.PHONY: all run init debug compile test clean clean_test fclean leak generate_cc
+.PHONY: all run init debug build test clean clean_test fclean leak generate_cc
 
-all: compile
+all: build
 
-run: compile
+run: build
 	./$(MAIN)
 
-runf: compile
+runf: build
 	./$(MAIN) file
 
-runm: compile
+runm: build
 	./$(MAIN) makefile
 
 debug: CXXFLAGS += -g
 
-debug: fclean compile
+debug: fclean build
 
 test: LDFLAGS += -lgtest
 
@@ -55,7 +55,7 @@ test: CXXFLAGS += -g
 test: $(MAIN_TEST)
 	./$(MAIN_TEST) $(TEST_ARGUMENTS)
 
-compile: $(MAIN)
+build: $(MAIN)
 
 $(MAIN): $(obj)
 	@test -d bin || mkdir bin

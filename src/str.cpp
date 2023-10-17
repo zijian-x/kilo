@@ -1,5 +1,7 @@
 #include "str.hpp"
 
+#include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <vector>
 #include <cstring>
@@ -301,46 +303,6 @@ str& str::erase(const_iterator first, const_iterator last)
     return this->erase(index, cnt);
 }
 
-template<typename iter>
-static std::vector<str::size_type> gen_lps(iter begin, iter end)
-{
-    str::size_type size = static_cast<str::size_type>(std::distance(begin, end));
-    auto lps = std::vector<str::size_type>(size, 0);
-
-    str::size_type i = 0, j = 1;
-
-    while (begin + j != end) {
-        if (*(begin + i) == *(begin + j)) {
-            lps[j++] = ++i;
-        } else {
-            if (!i)
-                ++j;
-            else
-                i = lps[i - 1];
-        }
-    }
-    return lps;
-}
-
-template<typename iter>
-static str::size_type kmp(str::size_type pos, iter h_begin, iter h_end,
-        iter n_begin, iter n_end, const std::vector<str::size_type>& lps)
-{
-    auto n_size = std::distance(n_begin, n_end);
-    for (str::size_type j = 0; h_begin + pos + n_size - 1 < h_end;) {
-        for (; n_begin + j < n_end && *(h_begin + pos + j) == *(n_begin + j); ++j);
-        if (n_begin + j == n_end)
-            return pos;
-
-        auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
-                                                //    substr len
-        pos += skip;                              // 2: skip the substr len
-        j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
-                                                //    prefix too
-    }
-    return str::npos;
-}
-
 str::size_type str::find(const str& needle, size_type pos) const
 {
     if (needle.empty())
@@ -368,7 +330,7 @@ str::size_type str::rfind(const str& needle, size_type pos) const
     using std::rbegin, std::rend;
     const auto lps = gen_lps(rbegin(needle), rend(needle));
 
-    size_t rpos = 0;
+    size_type rpos = 0;
     if (m_size - needle.size() >= pos)
         rpos = m_size - needle.size() - pos;
     auto h_rbegin = rbegin(*this);
@@ -380,4 +342,26 @@ str::size_type str::rfind(const str& needle, size_type pos) const
     if (res != npos)
         res = m_size - needle.size() - res;
     return res;
+}
+
+str::size_type str::find(value_type c, size_type pos) const
+{
+    using std::begin, std::end;
+    auto be = begin(*this) + pos;
+    auto en = end(*this);
+    return this->find_char(be, en, c);
+}
+
+str::size_type str::rfind(value_type c, size_type pos) const
+{
+    using std::rbegin, std::rend;
+    pos = (pos >= m_size) ? 0 : m_size - pos - 1;
+    auto be = rbegin(*this) + static_cast<ptrdiff_t>(pos);
+    auto en = rend(*this);
+    pos = this->find_char(be, en, c);
+    if (pos != str::npos)
+        pos = m_size - 1 - pos;
+    // 0 1 2 3 4 5
+    // 5 4 3 2 1 0
+    return pos;
 }

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iterator>
+#include <type_traits>
+#include <vector>
 
 class str
 {
@@ -125,13 +127,13 @@ public:
     str& append(const_pointer, size_type count = npos);
 
     template<typename input_iter>
-    str& append(input_iter first, input_iter last)
-    {
-        while (first != last)
-            this->append(1, *first++);
+        str& append(input_iter first, input_iter last)
+        {
+            while (first != last)
+                this->append(1, *first++);
 
-        return *this;
-    }
+            return *this;
+        }
 
     str& insert(size_type, size_type, int);
 
@@ -155,6 +157,10 @@ public:
 
     size_type rfind(const str&, size_type pos = npos) const;
 
+    size_type find(value_type, size_type pos = 0) const;
+
+    size_type rfind(value_type, size_type pos = npos) const;
+
     str& remove_newline();
 
 private:
@@ -167,4 +173,64 @@ private:
     };
     bool sbo{true};
     value_type* bptr{smb};
+
+    template<typename iter>
+    str::size_type find_char(iter from, iter to, value_type c) const
+    {
+        static_assert(std::is_same_v<iter, const_iterator>
+                || std::is_same_v<iter, const_reverse_iterator>);
+
+        using std::begin, std::rbegin;
+        while (from < to) {
+            if (*from == c) {
+                if constexpr (std::is_same_v<iter, const_reverse_iterator>)
+                    return static_cast<str::size_type>(std::distance(rbegin(*this), from));
+                else
+                    return static_cast<str::size_type>(std::distance(begin(*this), from));
+            }
+            ++from;
+        }
+        return str::npos;
+    }
 };
+
+
+template<typename iter>
+std::vector<str::size_type> gen_lps(iter begin, iter end)
+{
+    str::size_type size = static_cast<str::size_type>(std::distance(begin, end));
+    auto lps = std::vector<str::size_type>(size, 0);
+
+    str::size_type i = 0, j = 1;
+
+    while (begin + j != end) {
+        if (*(begin + i) == *(begin + j)) {
+            lps[j++] = ++i;
+        } else {
+            if (!i)
+                ++j;
+            else
+                i = lps[i - 1];
+        }
+    }
+    return lps;
+}
+
+template<typename iter>
+str::size_type kmp(str::size_type pos, iter h_begin, iter h_end,
+        iter n_begin, iter n_end, const std::vector<str::size_type>& lps)
+{
+    auto n_size = std::distance(n_begin, n_end);
+    for (str::size_type j = 0; h_begin + pos + n_size - 1 < h_end;) {
+        for (; n_begin + j < n_end && *(h_begin + pos + j) == *(n_begin + j); ++j);
+        if (n_begin + j == n_end)
+            return pos;
+
+        auto skip = (j) ? j - lps[j - 1] : 1;   // 1: get lps from the matched
+                                                //    substr len
+        pos += skip;                              // 2: skip the substr len
+        j = (skip != 1) ? lps[j - 1] : 0;       // 3: skip the already matched
+                                                //    prefix too
+    }
+    return str::npos;
+}
