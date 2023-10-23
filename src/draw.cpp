@@ -67,13 +67,21 @@ void draw_statusbar(editor_state& ed_state, str& buf)
 
 str render_row(const str& row)
 {
-    auto render = str();
+    using std::begin, std::end;
+    auto tab_cnt = std::count(begin(row), end(row), '\t');
 
-    for (size_t i = 0; i < row.size(); ++i) {
-        if (row[i] == '\t')
-            render.append(TABSTOP, ' ');
-        else
-            render.push_back(row[i]);
+    auto render = str();
+    render.reserve(row.size() + static_cast<size_t>(tab_cnt * (TABSTOP - 1)) + 1);
+
+    size_t idx = 0;
+    for (auto c : row) {
+        if (c == '\t') {
+            do {
+                render[idx++] = ' ';
+            } while (idx % TABSTOP);
+        } else {
+            render[idx++] = c;
+        }
     }
 
     return render;

@@ -51,6 +51,7 @@ void editor_state::move_curor(int c)
 
 void editor_state::set_r_col()
 {
+    m_r_col = 0;
     const auto& row = m_rows[m_c_row];
     for (size_t i = 0; i < m_c_col; ++i) {
         if (row[i] == '\t')
