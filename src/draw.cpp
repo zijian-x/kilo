@@ -93,7 +93,7 @@ str render_row(const str& row)
 str highlight_render(const str& render)
 {
     auto hl = str();
-    hl.reserve(render.size());
+    hl.resize(render.size());
     for (size_t i = 0; i < render.size(); ++i) {
         hl[i] = static_cast<char>
             ((std::isdigit(render[i]) ? colors::RED :colors::DEFAULT));
@@ -117,18 +117,18 @@ void draw_rows(editor& ed, str& buf)
         if (auto row_idx = i + ed.rowoff(); row_idx < rows.size()) {
             const auto render = render_row(rows[row_idx]);
             auto start_index = std::min(ed.coloff(), render.size());
-            auto max_len = std::min(render.size(), ed.screen_col());
-            auto hl = highlight_render(render);
 
+            auto max_len = std::min(render.size() - start_index, ed.screen_col());
+            auto hl = highlight_render(render);
             int prev_color = colors::DEFAULT;
             for (size_t j = 0; j < max_len; ++j) {
-                if (hl[j] != prev_color)
-                    pad_hl(hl[j], buf);
+                if (hl[start_index + j] != prev_color)
+                    pad_hl(hl[start_index + j], buf);
                 buf.push_back(render[start_index + j]);
-                prev_color = hl[j];
+                prev_color = hl[start_index + j];
             }
             pad_hl(colors::DEFAULT, buf);
-        } else if (!rows.size() && i == ed.screen_row() >> 1) {
+        } else if (rows.empty() && i == ed.screen_row() >> 1) {
             print_welcome(ed, buf);
         } else {
             buf.push_back('~');
