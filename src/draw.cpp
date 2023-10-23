@@ -78,12 +78,13 @@ str render_row(const str& row)
     size_t idx = 0;
     for (auto c : row) {
         if (c == '\t') {
-            do {
-                render[idx++] = ' ';
-            } while (idx % TABSTOP);
+            auto cnt = TABSTOP - idx % TABSTOP;
+            render.append(cnt, ' ');
+            idx += cnt - 1;
         } else {
-            render[idx++] = c;
+            render.push_back(c);
         }
+        ++idx;
     }
 
     return render;
