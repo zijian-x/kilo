@@ -67,29 +67,6 @@ void draw_statusbar(editor& ed, str& buf)
     buf.append(NEW_LINE);
 }
 
-str render_row(const str& row)
-{
-    using std::begin, std::end;
-    auto tab_cnt = std::count(begin(row), end(row), '\t');
-
-    auto render = str();
-    render.reserve(row.size() + static_cast<size_t>(tab_cnt * (TABSTOP - 1)) + 1);
-
-    size_t idx = 0;
-    for (auto c : row) {
-        if (c == '\t') {
-            auto cnt = TABSTOP - idx % TABSTOP;
-            render.append(cnt, ' ');
-            idx += cnt - 1;
-        } else {
-            render.push_back(c);
-        }
-        ++idx;
-    }
-
-    return render;
-}
-
 str highlight_render(const str& render)
 {
     auto hl = str();

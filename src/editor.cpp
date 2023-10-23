@@ -24,10 +24,22 @@ void editor_row::upd_row()
 
 void editor_row::render_content()
 {
-    m_render = m_content;
-    for (size_t i = 0; i < m_render.size(); ++i) {
-        if (m_content[i] == '\t')
-            m_render.replace(i, 1, TABSTOP, ' ');
+    using std::begin, std::end;
+    auto tab_cnt = std::count(begin(m_content), end(m_content), '\t');
+
+    m_render.clear();
+    m_render.reserve(m_content.size() + static_cast<size_t>(tab_cnt * (TABSTOP - 1)) + 1);
+
+    size_t idx = 0;
+    for (auto c : m_content) {
+        if (c == '\t') {
+            auto cnt = TABSTOP - idx % TABSTOP;
+            m_render.append(cnt, ' ');
+            idx += cnt - 1;
+        } else {
+            m_render.push_back(c);
+        }
+        ++idx;
     }
 }
 
