@@ -67,17 +67,6 @@ void draw_statusbar(editor& ed, str& buf)
     buf.append(NEW_LINE);
 }
 
-str highlight_render(const str& render)
-{
-    auto hl = str();
-    hl.resize(render.size());
-    for (size_t i = 0; i < render.size(); ++i) {
-        hl[i] = static_cast<char>
-            ((std::isdigit(render[i]) ? colors::RED :colors::DEFAULT));
-    }
-    return hl;
-}
-
 void pad_hl(char hl, str& buf)
 {
     char hl_code[16]{};
@@ -94,9 +83,9 @@ void draw_rows(editor& ed, str& buf)
             const auto& row = ed.rows()[row_idx];
             const auto& render = row.render();
             auto start_index = std::min(ed.coloff(), render.size());
-
             auto max_len = std::min(render.size() - start_index, ed.screen_col());
-            auto hl = highlight_render(render);
+
+            const auto& hl = row.hl();
             int prev_color = colors::DEFAULT;
             for (size_t j = 0; j < max_len; ++j) {
                 if (hl[start_index + j] != prev_color)
