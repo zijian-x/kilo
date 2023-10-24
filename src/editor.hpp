@@ -12,6 +12,7 @@
 #include "str.hpp"
 
 #define HL_NUMBER (1<<0)
+#define HL_STRING (1<<1)
 
 static constexpr unsigned short TABSTOP = 8;
 static constexpr unsigned short QUIT_TIMES = 1;
@@ -27,7 +28,7 @@ struct editor_syntax
 };
 
 static const inline std::array<const editor_syntax, 1> HLDB{
-    editor_syntax{ "c", {".c", ".cpp", ".h"}, HL_NUMBER },
+    editor_syntax{ "c", {".c", ".cpp", ".h"}, HL_NUMBER | HL_STRING },
 };
 
 class editor_row

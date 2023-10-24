@@ -54,11 +54,12 @@ void editor_row::hl_content()
         return;
 
     bool prev_is_sep = true;
+    char in_string = 0;
     for (size_t i = 0; i < m_render.size(); ++i) {
         static auto is_sep = [](char c) {
             return isspace(c)
                 || c == '\0'
-                || str(",.()+-/*=~%<>[];").find(c) != str::npos;
+                || str(",.()+-/*=~%<>[];'\"").find(c) != str::npos;
         };
         auto prev_color = (i) ? m_hl[i - 1] : colors::DEFAULT;
         auto cur_color = colors::DEFAULT;
@@ -70,11 +71,26 @@ void editor_row::hl_content()
                 || (c == '.' && prev_color == colors::CYAN);
 
         };
+        auto hl_string = [&](char c) {
+            if (!m_hl_syntax.has_value() || !(m_hl_syntax.value().flags & HL_STRING))
+                return false;
+            if (in_string) {
+                if (c == in_string && i && m_render[i - 1] != '\\')
+                    in_string = 0;
+                return true;
+            } else if (c == '"' || c == '\'') {
+                in_string = c;
+                return true;
+            }
+            return false;
+        };
 
-        if (hl_nums(m_render[i]))
+        if (hl_string(m_render[i])) {
+            cur_color = colors::YELLOW;
+        } else if (hl_nums(m_render[i]))
             cur_color = colors::CYAN;
-
         m_hl[i] = static_cast<char>(cur_color);
+
         prev_is_sep = is_sep(m_render[i]);
         prev_color = cur_color;
     }
