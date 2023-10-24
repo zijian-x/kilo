@@ -41,6 +41,9 @@ run: build
 runf: build
 	./$(MAIN) file
 
+runc: build
+	./$(MAIN) src/kilo.cpp
+
 runm: build
 	./$(MAIN) makefile
 

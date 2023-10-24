@@ -1,6 +1,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <format>
+#include <iomanip>
 #include <unistd.h>
 
 #include "file_io.hpp"
@@ -15,7 +16,8 @@ namespace file
         ed.filename() = fp.filename();
 
         for (auto line = fp.next_line(); line.size(); line = fp.next_line())
-            ed.rows().push_back(std::move(line.remove_newline()));
+            ed.rows().emplace_back(std::move(line.remove_newline()));
+        ed.set_ft();
     }
 
     void save_file(editor& ed)
@@ -26,6 +28,7 @@ namespace file
                 ed.status_msg().set_content("Saving aborted");
                 return;
             }
+            ed.set_ft();
         }
 
         const auto& buf = ed.rows_to_string();

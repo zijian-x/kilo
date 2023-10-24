@@ -3,6 +3,7 @@
 #include <format>
 #include <functional>
 #include <numeric>
+#include <string_view>
 #include <type_traits>
 #include <unistd.h>
 
@@ -11,7 +12,7 @@
 #include "editor_keys.hpp"
 #include "str.hpp"
 
-static constexpr const char* KILO_VERS = "0.0.1";
+static constexpr std::string_view KILO_VERS = "0.0.1";
 
 using namespace char_seq;
 
@@ -56,8 +57,10 @@ void draw_statusbar(editor& ed, str& buf)
                  "[No Name]" : ed.filename().c_str()),
                 ed.rows().size(),
                 (ed.dirty() ? " [+]" : "")).c_str());
-    auto line_info = str(std::format("{}:{}",
-                ed.c_row() + 1, ed.c_col() + 1).c_str());
+    auto line_info = str(std::format("{}:{} | {}",
+                ed.c_row() + 1, ed.c_col() + 1,
+                (ed.hl_syntax().has_value() ? ed.hl_syntax()->filetype.c_str() : "no ft")
+                ).c_str());
 
     file_info.resize(ed.screen_col() - line_info.size(), ' ');
     buf.append(std::move(file_info));

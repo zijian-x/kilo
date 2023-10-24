@@ -10,10 +10,14 @@
 
 using namespace char_seq;
 
-editor_row::editor_row(const str& s) : m_content{s}
+editor_row::editor_row(const str& s, std::optional<editor_syntax> hl_syntax)
+    : m_content{s}
+    , m_hl_syntax{hl_syntax}
 { upd_row(); }
 
-editor_row::editor_row(str&& s) : m_content{s}
+editor_row::editor_row(str&& s, std::optional<editor_syntax> hl_syntax)
+    : m_content{s}
+    , m_hl_syntax{hl_syntax}
 { upd_row(); }
 
 void editor_row::upd_row()
@@ -45,38 +49,52 @@ void editor_row::render_content()
 
 void editor_row::hl_content()
 {
-    auto is_sep = [](char c) {
-        return isspace(c)
-            || c == '\0'
-            || str(",.()+-/*=~%<>[];").find(c) != str::npos;
-    };
     m_hl.resize(m_render.size(), colors::DEFAULT);
+    if (!m_hl_syntax.has_value())
+        return;
+
+    bool prev_is_sep = true;
     for (size_t i = 0; i < m_render.size(); ++i) {
-        auto color = colors::DEFAULT;
-        if (std::isdigit(m_render[i]))
-            color = colors::CYAN;
-        m_hl[i] = static_cast<char>(color);
+        static auto is_sep = [](char c) {
+            return isspace(c)
+                || c == '\0'
+                || str(",.()+-/*=~%<>[];").find(c) != str::npos;
+        };
+        auto prev_color = (i) ? m_hl[i - 1] : colors::DEFAULT;
+        auto cur_color = colors::DEFAULT;
+        auto hl_nums = [&](char c) {
+            return (m_hl_syntax.has_value() &&
+                    (m_hl_syntax.value().flags & HL_NUMBER) &&
+                    std::isdigit(c)
+                    && (prev_is_sep || prev_color == colors::CYAN))
+                || (c == '.' && prev_color == colors::CYAN);
+
+        };
+
+        if (hl_nums(m_render[i]))
+            cur_color = colors::CYAN;
+
+        m_hl[i] = static_cast<char>(cur_color);
+        prev_is_sep = is_sep(m_render[i]);
+        prev_color = cur_color;
     }
 }
 
 void editor_row::insert(str::size_type index, str::size_type count, int c)
 {
     m_content.insert(index, count, c);
-    m_render.insert(index, count, c);
     upd_row();
 }
 
 void editor_row::erase(str::size_type index, str::size_type count)
 {
     m_content.erase(index, count);
-    m_render.erase(index, count);
     upd_row();
 }
 
 void editor_row::append(const editor_row& row)
 {
     m_content.append(row.content());
-    m_render.append(row.content());
     upd_row();
 }
 
@@ -88,6 +106,30 @@ editor::editor()
         throw std::runtime_error("ioctl error");
     m_screen_row = ws.ws_row - 2;
     m_screen_col = ws.ws_col;
+}
+
+void editor::set_ft()
+{
+    if (m_filename.empty())
+        return;
+
+    auto file_ext = m_filename.rfind('.');
+    for (const auto& hl_syntax : HLDB) {
+        for (const auto& ft : hl_syntax.filematches) {
+            size_t i = 0;
+            while (i < ft.size() && file_ext + i < m_filename.size()
+                    && m_filename[file_ext + i] == ft[i])
+                ++i;
+            if (i == ft.size()) {
+                m_hl_syntax = hl_syntax;
+                for (auto& row : m_rows) {
+                    row.hl_syntax() = m_hl_syntax;
+                    row.upd_row();
+                }
+                return;
+            }
+        }
+    }
 }
 
 void editor::move_curor(int c)

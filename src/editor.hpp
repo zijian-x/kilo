@@ -1,5 +1,8 @@
 #pragma once
 
+#include <array>
+#include <string_view>
+#include <bitset>
 #include <algorithm>
 #include <cstddef>
 #include <utility>
@@ -8,20 +11,33 @@
 
 #include "str.hpp"
 
+#define HL_NUMBER (1<<0)
+
 static constexpr unsigned short TABSTOP = 8;
 static constexpr unsigned short QUIT_TIMES = 1;
-static constexpr const char* DEFAULT_MSG = "HELP: CTRL-S = save"
+static constexpr std::string_view DEFAULT_MSG = "HELP: CTRL-S = save"
                                            " | CTRL-Q = Quit"
                                            " | CTRL-F = Find";
+
+struct editor_syntax
+{
+    str filetype;
+    std::vector<str> filematches;
+    unsigned int flags;
+};
+
+static const inline std::array<const editor_syntax, 1> HLDB{
+    editor_syntax{ "c", {".c", ".cpp", ".h"}, HL_NUMBER },
+};
 
 class editor_row
 {
 public:
     editor_row() = default;
 
-    editor_row(const str& s);
+    editor_row(const str& s, std::optional<editor_syntax> hl_syntax = {});
 
-    editor_row(str&& s);
+    editor_row(str&& s, std::optional<editor_syntax> hl_syntax = {});
 
     const str& content() const
     { return this->m_content; }
@@ -41,6 +57,12 @@ public:
     str& hl()
     { return this->m_hl; }
 
+    std::optional<editor_syntax>& hl_syntax()
+    { return this->m_hl_syntax; }
+
+    const std::optional<editor_syntax>& hl_syntax() const
+    { return this->m_hl_syntax; }
+
     str::size_type size() const
     { return m_content.size(); }
 
@@ -56,6 +78,7 @@ private:
     str m_content;
     str m_render;
     str m_hl;
+    std::optional<editor_syntax> m_hl_syntax;
 
     void render_content();
     void hl_content();
@@ -88,7 +111,7 @@ public:
     }
 
 private:
-    str m_content = DEFAULT_MSG;
+    str m_content = DEFAULT_MSG.data();
     std::chrono::time_point<std::chrono::system_clock> m_timestamp = std::chrono::system_clock::now(); // wtf man..., i just want to get the time
 };
 
@@ -163,6 +186,14 @@ public:
     const status_message& status_msg() const
     { return this->m_status_msg; }
 
+    std::optional<editor_syntax>& hl_syntax()
+    { return this->m_hl_syntax; }
+
+    const std::optional<editor_syntax>& hl_syntax() const
+    { return this->m_hl_syntax; }
+
+    void set_ft();
+
     void move_curor(int);
 
     void set_r_col();
@@ -186,6 +217,7 @@ private:
     std::size_t m_rowoff{}, m_coloff{};
     std::vector<editor_row> m_rows;
     status_message m_status_msg;
+    std::optional<editor_syntax> m_hl_syntax;
 
     void incr_find(const str&, int);
 };
