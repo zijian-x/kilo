@@ -42,7 +42,7 @@ runf: build
 	./$(MAIN) file
 
 runc: build
-	./$(MAIN) src/kilo.cpp
+	./$(MAIN) testfile.cpp
 
 runm: build
 	./$(MAIN) makefile

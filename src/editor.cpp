@@ -54,15 +54,14 @@ void editor_row::hl_content()
         return;
 
     bool prev_is_sep = true;
-    char in_string = 0;
     for (size_t i = 0; i < m_render.size(); ++i) {
         static auto is_sep = [](char c) {
             return isspace(c)
                 || c == '\0'
                 || str(",.()+-/*=~%<>[];'\"").find(c) != str::npos;
         };
-        auto prev_color = (i) ? m_hl[i - 1] : colors::DEFAULT;
         auto cur_color = colors::DEFAULT;
+        auto prev_color = (i) ? m_hl[i - 1] : colors::DEFAULT;
         auto hl_nums = [&](char c) {
             return (m_hl_syntax.has_value() &&
                     (m_hl_syntax.value().flags & HL_NUMBER) &&
@@ -72,7 +71,8 @@ void editor_row::hl_content()
 
         };
         auto hl_string = [&](char c) {
-            if (!m_hl_syntax.has_value() || !(m_hl_syntax.value().flags & HL_STRING))
+            static char in_string = 0;
+            if (!(m_hl_syntax.value().flags & HL_STRING))
                 return false;
             if (in_string) {
                 if (c == in_string && i && m_render[i - 1] != '\\')
@@ -85,7 +85,17 @@ void editor_row::hl_content()
             return false;
         };
         auto hl_comment = [&]() {
+            // TODO use str::compare()
             return m_render.find(m_hl_syntax->single_line_comment_syntax) == i;
+        };
+        auto hl_keyword = [&](char c) {
+            if (!prev_is_sep)
+                return false;
+
+            for (const auto& keyword : m_hl_syntax->keywords) {
+                // TODO use str::compare()
+            }
+            return false;
         };
 
         if (hl_comment()) {
@@ -93,8 +103,9 @@ void editor_row::hl_content()
             break;
         } else if (hl_string(m_render[i])) {
             cur_color = colors::YELLOW;
-        } else if (hl_nums(m_render[i]))
+        } else if (hl_nums(m_render[i])) {
             cur_color = colors::CYAN;
+        }
         m_hl[i] = static_cast<char>(cur_color);
 
         prev_is_sep = is_sep(m_render[i]);
@@ -139,6 +150,7 @@ void editor::set_ft()
     for (const auto& hl_syntax : HLDB) {
         for (const auto& ft : hl_syntax.filematches) {
             size_t i = 0;
+            // TODO use str::compare()
             while (i < ft.size() && file_ext + i < m_filename.size()
                     && m_filename[file_ext + i] == ft[i])
                 ++i;
