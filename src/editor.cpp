@@ -84,8 +84,14 @@ void editor_row::hl_content()
             }
             return false;
         };
+        auto hl_comment = [&]() {
+            return m_render.find(m_hl_syntax->single_line_comment_syntax) == i;
+        };
 
-        if (hl_string(m_render[i])) {
+        if (hl_comment()) {
+            m_hl.replace(i, m_hl.size() - i, m_hl.size() - i, colors::WHITE);
+            break;
+        } else if (hl_string(m_render[i])) {
             cur_color = colors::YELLOW;
         } else if (hl_nums(m_render[i]))
             cur_color = colors::CYAN;

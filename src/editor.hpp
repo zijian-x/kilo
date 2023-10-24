@@ -24,11 +24,12 @@ struct editor_syntax
 {
     str filetype;
     std::vector<str> filematches;
+    str single_line_comment_syntax;
     unsigned int flags;
 };
 
-static const inline std::array<const editor_syntax, 1> HLDB{
-    editor_syntax{ "c", {".c", ".cpp", ".h"}, HL_NUMBER | HL_STRING },
+static const inline std::array HLDB{
+    editor_syntax{ "c", {".c", ".cpp", ".h"}, "//", HL_NUMBER | HL_STRING },
 };
 
 class editor_row
