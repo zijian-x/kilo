@@ -365,3 +365,34 @@ str::size_type str::rfind(value_type c, size_type pos) const
     // 5 4 3 2 1 0
     return pos;
 }
+
+int str::compare(size_type pos1, size_type count1,
+        const str& s, size_type pos2, size_type count2) const
+{
+    if (pos1 > s.size() || pos2 > s.size())
+        throw std::out_of_range("compare index out of range");
+
+    size_t i = 0;
+    while (count1 && count2 && pos1 + i < this->size() && pos2 + i < s.size()) {
+        auto res = bptr[pos1 + i] - s[pos2 + i];
+        if (res)
+            return res;
+        --count1, --count2;
+        ++i;
+    }
+
+    if (pos1 + i == this->size() && pos2 + i == s.size())
+        return count1 == count2 ? 0 : count1 < count2 ? -1 : 1;
+    else
+        return pos1 + i < this->size() ? 1 : -1;
+}
+
+int str::compare(size_type pos1, size_type count1, const str& s) const
+{
+    return this->compare(pos1, count1, s, 0, s.size());
+}
+
+int str::compare(const str& s) const
+{
+    return this->compare(0, this->size(), s, 0, s.size());
+}

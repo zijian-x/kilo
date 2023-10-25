@@ -161,6 +161,12 @@ public:
 
     size_type rfind(value_type, size_type pos = npos) const;
 
+    int compare(size_type, size_type, const str&, size_type, size_type) const;
+
+    int compare(size_type, size_type, const str&) const;
+
+    int compare(const str&) const;
+
     str& remove_newline();
 
 private:

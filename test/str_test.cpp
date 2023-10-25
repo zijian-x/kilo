@@ -34,6 +34,11 @@ protected:
     std::mt19937 mt{};
     std::uniform_int_distribution<char> rand_char{'!', '~'};
 
+    bool is_zero_or_same_sign(int a, int b)
+    {
+        return (!a && !b) || (a > 0 && b > 0) || (a < 0 && b < 0);
+    }
+
     void SetUp() override
     {
         s = line;
@@ -1058,5 +1063,112 @@ TEST_F(str_test, find_char2)
         auto idx = rand_idx(mt);
         ASSERT_EQ(s.find(c, idx), stls.find(c, idx));
         ASSERT_EQ(s.rfind(c, idx), stls.rfind(c, idx));
+    }
+}
+
+TEST_F(str_test, compare1)
+{
+    ASSERT_STREQ(s.c_str(), stls.c_str());
+    ASSERT_EQ(s.compare(stls.c_str()), stls.compare(s.c_str()));
+}
+
+TEST_F(str_test, compare2)
+{
+    for (size_t i = 0; i < 1000; ++i) {
+        auto s1 = gen_str('!', '~', i);
+        ASSERT_EQ(s1.compare(s1), 0);
+    }
+}
+
+TEST_F(str_test, compare3)
+{
+    for (size_t i = 0; i < 1000; ++i) {
+        auto s1 = gen_str('!', '~', i);
+        auto s2 = gen_str('!', '~', i);
+        std::string stls1 = s1.c_str();
+        std::string stls2 = s2.c_str();
+
+        ASSERT_TRUE(is_zero_or_same_sign(s1.compare(s2), stls1.compare(stls2)));
+        ASSERT_TRUE(is_zero_or_same_sign(s2.compare(s1), stls2.compare(stls1)));
+    }
+}
+
+TEST_F(str_test, compare4)
+{
+    auto rand_size = std::uniform_int_distribution<size_t>(200, 1000);
+    for (auto i = 0; i < 26; ++i) {
+        auto size = rand_size(mt);
+        auto s1 = gen_str('a', 'a' + i, size);
+        auto s2 = gen_str('!', 'a' + i, size);
+        std::string stls1 = s1.c_str();
+        std::string stls2 = s2.c_str();
+
+        ASSERT_EQ(s1.compare(s2), stls1.compare(stls2));
+        ASSERT_EQ(s2.compare(s1), stls2.compare(stls1));
+    }
+}
+
+TEST_F(str_test, compare_this_idx)
+{
+    auto rand_size = std::uniform_int_distribution<size_t>(200, 1000);
+    for (auto i = 0; i < 26; ++i) {
+        for (auto k = 0; k < 100; ++k) {
+            auto size = rand_size(mt);
+            auto s1 = gen_str('a', 'a' + i, size);
+            auto s2 = gen_str('a', 'a' + i, size);
+            std::string stls1 = s1.c_str();
+            std::string stls2 = s2.c_str();
+
+            for (size_t j = 0; j < size; ++j) {
+                auto res_s1 = s1.compare(j, s1.size(), s2);
+                auto res_stls1 = stls1.compare(j, stls1.size(), stls2);
+                ASSERT_TRUE(is_zero_or_same_sign(res_s1, res_stls1));
+
+                auto res_s2 = s2.compare(j, s2.size(), s1);
+                auto res_stls2 = stls2.compare(j, stls2.size(), stls1);
+                ASSERT_TRUE(is_zero_or_same_sign(res_s2, res_stls2));
+            }
+        }
+    }
+}
+
+TEST_F(str_test, compare5)
+{
+    for (size_t i = 1; i < 500; ++i) {
+        auto s1 = gen_str('!', '~', i);
+        auto rand_idx = std::uniform_int_distribution<size_t>(0, i - 1);
+        auto rand_char = std::uniform_int_distribution<char>('!', '~');
+        for (size_t j = 0; j < s1.size(); ++j) {
+            auto idx = rand_idx(mt);
+            auto c = rand_char(mt);
+            auto s2 = s1;
+            auto diff1 = s2[idx] - c;
+            auto diff2 = c - s2[idx];
+            s2[idx] = c;
+            ASSERT_EQ(s1.compare(s2), diff1);
+            ASSERT_EQ(s2.compare(s1), diff2);
+        }
+    }
+}
+
+TEST_F(str_test, compare_one_diff)
+{
+    for (size_t i = 1; i < 150; ++i) {
+        auto s1 = gen_str('!', '~', i);
+        auto rand_idx = std::uniform_int_distribution<size_t>(0, i - 1);
+        auto rand_char = std::uniform_int_distribution<char>('!', '~');
+        for (size_t j = 0; j < s1.size(); ++j) {
+            auto idx = rand_idx(mt);
+            auto c = rand_char(mt);
+            auto s2 = s1;
+            auto diff1 = s2[idx] - c;
+            auto diff2 = c - s2[idx];
+            s2[idx] = c;
+
+            for (size_t k = 0; k < s1.size(); ++k) {
+                ASSERT_EQ(s1.compare(k, s1.size(), s2, k, s2.size()), k <= idx ? diff1 : 0);
+                ASSERT_EQ(s2.compare(k, s2.size(), s1, k, s2.size()), k <= idx ? diff2 : 0);
+            }
+        }
     }
 }
