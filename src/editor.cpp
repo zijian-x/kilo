@@ -85,8 +85,9 @@ void editor_row::hl_content()
             return false;
         };
         auto hl_comment = [&]() {
-            // TODO use str::compare()
-            return m_render.find(m_hl_syntax->single_line_comment_syntax) == i;
+            const auto& cmt_syntax = m_hl_syntax->single_line_comment_syntax;
+            return !m_render.compare(i, cmt_syntax.size(), cmt_syntax);
+            // return m_render.find(m_hl_syntax->single_line_comment_syntax) == i;
         };
         auto hl_keyword = [&](char c) {
             if (!prev_is_sep)

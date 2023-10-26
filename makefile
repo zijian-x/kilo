@@ -21,7 +21,7 @@ LIB := -lfmt
 SAN := -fsanitize=address,undefined
 LDFLAGS := $(SAN) $(LIB)
 
-TEST_ARGUMENTS := --gtest_filter=*
+TEST_ARGUMENTS := --gtest_filter=str_test.compare*
 
 src := $(shell find $(SRC_DIR) -type f -name "*.cpp")
 obj := $(src:.cpp=.o)
@@ -39,7 +39,7 @@ run: build
 	./$(MAIN)
 
 runf: build
-	./$(MAIN) file
+	./$(MAIN) testfile
 
 runc: build
 	./$(MAIN) testfile.cpp

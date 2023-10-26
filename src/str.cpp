@@ -369,22 +369,23 @@ str::size_type str::rfind(value_type c, size_type pos) const
 int str::compare(size_type pos1, size_type count1,
         const str& s, size_type pos2, size_type count2) const
 {
-    if (pos1 > s.size() || pos2 > s.size())
-        throw std::out_of_range("compare index out of range");
+    auto rlen = std::min(count1, count2);
+    auto size1 = this->size();
+    auto size2 = s.size();
 
-    size_t i = 0;
-    while (count1 && count2 && pos1 + i < this->size() && pos2 + i < s.size()) {
+    for (size_type i = 0; i < rlen; ++i) {
+        if (pos1 + i == size1 && pos2 + i == size2)
+            return 0;
+        else if (pos1 + i == size1)
+            return -1;
+        else if (pos2 + i == size2)
+            return 1;
         auto res = bptr[pos1 + i] - s[pos2 + i];
         if (res)
             return res;
-        --count1, --count2;
-        ++i;
     }
 
-    if (pos1 + i == this->size() && pos2 + i == s.size())
-        return count1 == count2 ? 0 : count1 < count2 ? -1 : 1;
-    else
-        return pos1 + i < this->size() ? 1 : -1;
+    return (count1 == count2) ? 0 : (count1 < count2) ? -1 : 1;
 }
 
 int str::compare(size_type pos1, size_type count1, const str& s) const
