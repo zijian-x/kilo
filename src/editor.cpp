@@ -53,6 +53,8 @@ void editor_row::hl_content()
     if (!m_hl_syntax.has_value())
         return;
 
+    static char in_string = 0;
+    static char in_comment = 0;
     bool prev_is_sep = true;
     for (size_t i = 0; i < m_render.size(); ++i) {
         static auto is_sep = [](char c) {
@@ -71,7 +73,6 @@ void editor_row::hl_content()
 
         };
         auto hl_string = [&](char c) {
-            static char in_string = 0;
             if (!(m_hl_syntax.value().flags & HL_STRING))
                 return false;
             if (in_string) {
@@ -84,9 +85,28 @@ void editor_row::hl_content()
             }
             return false;
         };
-        auto hl_comment = [&]() {
+        auto hl_single_comment = [&]() {
             const auto& cmt_syntax = m_hl_syntax->single_line_comment_syntax;
-            return !m_render.compare(i, cmt_syntax.size(), cmt_syntax);
+            return !in_comment && !m_render.compare(i, cmt_syntax.size(), cmt_syntax);
+        };
+        auto hl_multi_comment = [&]() {
+            const auto& comment_begin = m_hl_syntax->multi_line_comment_begin;
+            const auto& comment_end = m_hl_syntax->multi_line_comment_end;
+            if (in_comment) {
+                if (!comment_end.compare(0, comment_end.size(), m_render, i, comment_end.size())) {
+                    m_hl.replace(i, comment_end.size(), comment_end.size(), colors::WHITE);
+                    i += comment_end.size() - 1;
+                    in_comment = 0;
+                }
+                return true;
+            } else if (!comment_begin.compare(0, comment_begin.size(),
+                        m_render, i, comment_begin.size())) {
+                m_hl.replace(i, comment_begin.size(), comment_begin.size(), colors::WHITE);
+                i += comment_begin.size() - 1;
+                in_comment = true;
+                return true;
+            }
+            return false;
         };
         auto hl_keyword = [&]() {
             if (!prev_is_sep)
@@ -103,9 +123,11 @@ void editor_row::hl_content()
             return false;
         };
 
-        if (hl_comment()) {
+        if (hl_single_comment()) {
             m_hl.replace(i, m_hl.size() - i, m_hl.size() - i, colors::WHITE);
             break;
+        } else if (hl_multi_comment()) {
+            cur_color = colors::WHITE;
         } else if (hl_keyword()) {
             prev_is_sep = false;
         } else if (hl_string(m_render[i])) {

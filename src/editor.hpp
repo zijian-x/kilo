@@ -25,7 +25,10 @@ struct editor_syntax
     str filetype;
     std::vector<str> filematches;
     std::vector<str> keywords;
+    // TODO wrap comment with optional
     str single_line_comment_syntax;
+    str multi_line_comment_begin;
+    str multi_line_comment_end;
     unsigned int flags;
 };
 
@@ -41,7 +44,7 @@ static const inline std::array HLDB{
             "case", "int", "long", "double", "float", "char", "unsigned",
             "signed", "void",
         },
-        "//",
+        "//", "/*", "*/",
         HL_NUMBER | HL_STRING
     },
 };
