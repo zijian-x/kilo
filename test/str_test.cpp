@@ -1115,8 +1115,8 @@ TEST_F(str_test, compare5)
     auto stls1 = std::string(s1.c_str());
 
     for (size_t i = 0; i < s1.size(); ++i) {
-        ASSERT_EQ(s1.compare(i, comment_syn.size(), comment_syn),
-                stls1.compare(i, comment_syn.size(), comment_syn.c_str()));
+        ASSERT_TRUE(is_zero_or_same_sign(s1.compare(i, comment_syn.size(), comment_syn),
+                stls1.compare(i, comment_syn.size(), comment_syn.c_str())));
     }
 }
 

@@ -161,7 +161,7 @@ public:
 
     size_type rfind(value_type, size_type pos = npos) const;
 
-    int compare(size_type, size_type, const str&, size_type, size_type) const;
+    int compare(size_type, size_type, const str&, size_type, size_type = str::npos) const;
 
     int compare(size_type, size_type, const str&) const;
 

@@ -87,7 +87,6 @@ void editor_row::hl_content()
         auto hl_comment = [&]() {
             const auto& cmt_syntax = m_hl_syntax->single_line_comment_syntax;
             return !m_render.compare(i, cmt_syntax.size(), cmt_syntax);
-            // return m_render.find(m_hl_syntax->single_line_comment_syntax) == i;
         };
         auto hl_keyword = [&](char c) {
             if (!prev_is_sep)
@@ -147,15 +146,14 @@ void editor::set_ft()
     if (m_filename.empty())
         return;
 
-    auto file_ext = m_filename.rfind('.');
+    auto file_ext_idx = m_filename.rfind('.');
     for (const auto& hl_syntax : HLDB) {
         for (const auto& ft : hl_syntax.filematches) {
-            size_t i = 0;
-            // TODO use str::compare()
-            while (i < ft.size() && file_ext + i < m_filename.size()
-                    && m_filename[file_ext + i] == ft[i])
-                ++i;
-            if (i == ft.size()) {
+            auto filetype_matches = [&]() {
+                return !ft.compare(0, ft.size(), m_filename,
+                        file_ext_idx, m_filename.size() - file_ext_idx);
+            };
+            if (filetype_matches()) {
                 m_hl_syntax = hl_syntax;
                 for (auto& row : m_rows) {
                     row.hl_syntax() = m_hl_syntax;
