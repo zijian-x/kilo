@@ -88,12 +88,17 @@ void editor_row::hl_content()
             const auto& cmt_syntax = m_hl_syntax->single_line_comment_syntax;
             return !m_render.compare(i, cmt_syntax.size(), cmt_syntax);
         };
-        auto hl_keyword = [&](char c) {
+        auto hl_keyword = [&]() {
             if (!prev_is_sep)
                 return false;
 
             for (const auto& keyword : m_hl_syntax->keywords) {
-                // TODO use str::compare()
+                if (!keyword.compare(0, keyword.size(), m_render, i, keyword.size())
+                        && is_sep(m_render[i + keyword.size()])) {
+                    m_hl.replace(i, keyword.size(), keyword.size(), colors::RED);
+                    i += keyword.size();
+                    return true;
+                }
             }
             return false;
         };
@@ -101,6 +106,8 @@ void editor_row::hl_content()
         if (hl_comment()) {
             m_hl.replace(i, m_hl.size() - i, m_hl.size() - i, colors::WHITE);
             break;
+        } else if (hl_keyword()) {
+            prev_is_sep = false;
         } else if (hl_string(m_render[i])) {
             cur_color = colors::YELLOW;
         } else if (hl_nums(m_render[i])) {
