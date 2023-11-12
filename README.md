@@ -16,7 +16,9 @@ completely written in modern C++(C++20) with [minimal dependencies](#Dependencie
 
 - **Basic Text Editing:** essential text editing functionalities such as
   insertion, deletion, and navigation.
-- **Syntax Highlighting :** basic syntax highlighting for `C/C++`
+- **Syntax Highlighting:** basic syntax highlighting for `C/C++`
+- **Incremental Searching:** incremental searching functionality and search
+  results navigation
 
 ## Special Attributes
 
@@ -79,6 +81,8 @@ Run the compiled executable: `./bin/kilo`
 
 - **Text Editing:** Open the editor and start typing. Use arrow keys to
   navigate, and press `Ctrl-Q` to quit.
+- **Searching:** Press `Ctrl-F` to initiate a search. Enter the desired word,
+  and use the arrow keys (UP and DOWN) to cycle through search results.
 
 ## Acknowledgments
 
