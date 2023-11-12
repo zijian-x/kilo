@@ -17,7 +17,7 @@ OPTM := -O0
 CXXFLAGS := $(LANG) $(STD) $(WARNINGS) $(OPTM)
 
 LD := clang++
-LIB := -lfmt
+LIB :=
 SAN := -fsanitize=address,undefined
 LDFLAGS := $(SAN) $(LIB)
 
